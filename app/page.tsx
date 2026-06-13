@@ -9,7 +9,7 @@ import { siteConfig } from "@/lib/site";
  */
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+    <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
       <p className="font-mono text-sm uppercase tracking-widest text-muted-foreground">
         Foundation ready
       </p>

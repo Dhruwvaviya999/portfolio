@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { Footer, Navbar, ScrollProgress } from "@/components/layout";
 import { siteConfig } from "@/lib/site";
 
 const fontSans = Geist({
@@ -66,7 +67,14 @@ export default function RootLayout({
       <body
         className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <ScrollProgress />
+          <div className="relative flex min-h-svh flex-col">
+            <Navbar />
+            {children}
+            <Footer />
+          </div>
+        </Providers>
       </body>
     </html>
   );

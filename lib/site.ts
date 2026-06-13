@@ -19,6 +19,8 @@ export const siteConfig = {
   url,
   /** Dynamic OG image route is generated in Section 7. */
   ogImage: `${url}/opengraph-image`,
+  /** Linked from the navbar Resume button. */
+  resumeUrl: "/resume.pdf", // TODO: drop a resume PDF in /public
   author: {
     name: "Your Name", // TODO
     email: "owner@shubhamtanks.com",
