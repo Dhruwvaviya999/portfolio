@@ -17,7 +17,7 @@ export function ProjectPager({
   return (
     <nav
       aria-label="Project navigation"
-      className="mx-auto w-full max-w-6xl px-4 sm:px-6"
+      className="mx-auto w-full max-w-7xl px-4 sm:px-6"
     >
       <div className="grid grid-cols-1 gap-4 border-t border-border py-10 sm:grid-cols-2">
         {prev ? (

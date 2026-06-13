@@ -67,7 +67,7 @@ export default async function ProjectPage({ params }: Params) {
           { name: meta.title, url: `${siteConfig.url}/projects/${slug}` },
         ])}
       />
-      <article className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+      <article className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6">
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },

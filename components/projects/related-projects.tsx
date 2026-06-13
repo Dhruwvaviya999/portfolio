@@ -11,7 +11,7 @@ export function RelatedProjects({ projects }: { projects: Project[] }) {
       aria-labelledby="related-heading"
       className="border-t border-border bg-muted/20"
     >
-      <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6">
         <Reveal>
           <h2
             id="related-heading"

@@ -26,7 +26,7 @@ export function HeroSection() {
         <div className="absolute -right-24 top-1/3 size-[24rem] rounded-full bg-brand/10 blur-3xl" />
       </div>
 
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-8">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-8">
         {/* Left: intro */}
         <div className="flex flex-col items-start gap-5">
           <SlideUp>

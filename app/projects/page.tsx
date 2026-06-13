@@ -25,7 +25,7 @@ export default function ProjectsIndexPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6">
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Projects" }]} />
 
         <header className="mt-8 max-w-2xl">
