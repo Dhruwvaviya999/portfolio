@@ -8,12 +8,11 @@
  */
 
 // Set NEXT_PUBLIC_SITE_URL in the deployment env; falls back for local dev.
-const url = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com"; // TODO: real domain
+const url = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
 
 export const siteConfig = {
-  name: "Your Name", // TODO
-  /** Used as the default <title> and the suffix in the title template. */
-  title: "Your Name — Software Engineer & Creative Developer", // TODO
+  name: "Dhruw Vaviya",
+  title: "Software Developer",
   description:
     "Portfolio of a software engineer building fast, polished web experiences with Next.js, TypeScript, and 3D on the web.", // TODO
   url,
@@ -22,8 +21,8 @@ export const siteConfig = {
   /** Linked from the navbar Resume button. */
   resumeUrl: "/resume.pdf", // TODO: drop a resume PDF in /public
   author: {
-    name: "Your Name", // TODO
-    email: "owner@shubhamtanks.com",
+    name: "Dhruw Vaviya",
+    email: "dhruwvaviya123@gmail.com",
     twitter: "@yourhandle", // TODO
   },
   keywords: [
@@ -37,10 +36,10 @@ export const siteConfig = {
     "WebGL",
   ],
   links: {
-    github: "https://github.com/yourhandle", // TODO
-    linkedin: "https://linkedin.com/in/yourhandle", // TODO
+    github: "https://github.com/dhruwvaviya999",
+    linkedin: "https://linkedin.com/in/dhruwvaviya",
     twitter: "https://twitter.com/yourhandle", // TODO
-    email: "owner@shubhamtanks.com",
+    email: "dhruwvaviya123@gmail.com",
   },
 } as const;
 
