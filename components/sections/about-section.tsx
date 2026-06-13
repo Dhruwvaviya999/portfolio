@@ -58,7 +58,7 @@ export function AboutSection() {
       <Stagger className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {aboutCards.map(({ title, icon: Icon, items }) => (
           <StaggerItem key={title}>
-            <Card className="h-full">
+            <Card className="h-full transition-colors duration-300 hover:ring-brand/30">
               <CardHeader>
                 <div className="flex size-9 items-center justify-center rounded-lg bg-brand/10 text-brand">
                   <Icon className="size-5" />

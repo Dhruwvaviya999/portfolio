@@ -19,7 +19,7 @@ function formatMonth(iso: string): string {
  */
 export function ExperienceSection() {
   return (
-    <Section id="experience">
+    <Section id="experience" className="bg-muted/30">
       <SectionHeading
         eyebrow="Experience"
         title="Where I've worked"

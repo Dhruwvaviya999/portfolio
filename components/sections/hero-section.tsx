@@ -91,18 +91,18 @@ export function HeroSection() {
         </div>
 
         {/* Right: interactive robot */}
-        <FadeIn duration={0.8}>
-          <div className="relative mx-auto aspect-square w-full max-w-md">
+        <FadeIn duration={0.8} className="w-full">
+          <div className="relative mx-auto aspect-square w-full max-w-65 sm:max-w-sm lg:max-w-md">
             <Robot />
           </div>
         </FadeIn>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator (desktop only — the stacked mobile hero scrolls naturally) */}
       <Link
         href="#about"
         aria-label="Scroll to about"
-        className="absolute inset-x-0 bottom-6 mx-auto flex w-fit flex-col items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        className="absolute inset-x-0 bottom-6 mx-auto hidden w-fit flex-col items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground sm:flex"
       >
         <span className="font-mono uppercase tracking-widest">Scroll</span>
         <ChevronDown className="size-4 motion-safe:animate-bounce" />

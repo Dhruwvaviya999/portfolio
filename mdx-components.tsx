@@ -54,7 +54,10 @@ export const mdxComponents: MDXComponents = {
   ),
   p: ({ className, ...props }) => (
     <p
-      className={cn("leading-7 not-first:mt-5 text-muted-foreground", className)}
+      className={cn(
+        "text-[1.05rem] leading-8 text-foreground/80 not-first:mt-6",
+        className,
+      )}
       {...props}
     />
   ),
@@ -68,7 +71,10 @@ export const mdxComponents: MDXComponents = {
     />
   ),
   li: ({ className, ...props }) => (
-    <li className={cn("leading-7 text-muted-foreground", className)} {...props} />
+    <li
+      className={cn("leading-7 text-foreground/80 marker:text-brand/60", className)}
+      {...props}
+    />
   ),
   blockquote: ({ className, ...props }) => (
     <blockquote

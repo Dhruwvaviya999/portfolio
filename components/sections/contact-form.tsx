@@ -52,7 +52,7 @@ export function ContactForm() {
         e.preventDefault();
         setSubmitted(true);
       }}
-      className="space-y-4"
+      className="space-y-5 rounded-xl border border-border bg-card p-6"
     >
       <div className="space-y-1.5">
         <label htmlFor="contact-name" className="text-sm font-medium">

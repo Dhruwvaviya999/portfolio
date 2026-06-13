@@ -148,6 +148,21 @@
   }
   html {
     @apply font-sans;
+    /* Keep anchor targets clear of the sticky header. */
+    scroll-padding-top: 4rem;
+  }
+  /* Consistent keyboard focus for links/controls. Scoped to interactive
+     elements so dialog/sheet popups aren't outlined. shadcn Button & inputs opt
+     out via `outline-none` and keep their own ring, so this won't double up. */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background-color: color-mix(in oklch, var(--brand) 28%, transparent);
   }
 }
 

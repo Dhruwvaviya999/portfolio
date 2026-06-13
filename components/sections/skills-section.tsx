@@ -11,7 +11,7 @@ import { SectionHeading } from "@/components/shared/section-heading";
  */
 export function SkillsSection() {
   return (
-    <Section id="skills">
+    <Section id="skills" className="bg-muted/30">
       <SectionHeading
         eyebrow="Skills"
         title="Tools I work with"
@@ -21,7 +21,7 @@ export function SkillsSection() {
       <Stagger className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2">
         {skills.map((group) => (
           <StaggerItem key={group.category}>
-            <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:ring-brand/40">
+            <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:ring-brand/40">
               <CardHeader>
                 <CardTitle>{group.category}</CardTitle>
               </CardHeader>

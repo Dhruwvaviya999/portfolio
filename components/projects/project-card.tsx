@@ -23,7 +23,7 @@ export function ProjectCard({ project }: { project: Project }) {
   const href = `/projects/${project.slug}`;
 
   return (
-    <Card className="group/proj h-full pt-0 transition-all duration-300 hover:-translate-y-1 hover:ring-brand/40">
+    <Card className="group/proj h-full pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-brand/40">
       {/* Cover (placeholder) */}
       <Link
         href={href}
