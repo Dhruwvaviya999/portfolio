@@ -1,0 +1,89 @@
+---
+slug: erp-system
+title: "Enterprise Resource Planning System"
+summary: "A modular ERP platform unifying inventory, procurement, and reporting for mid-market manufacturers."
+year: 2023
+role: "Full-Stack Engineer"
+featured: true
+cover: /images/projects/erp-system.png
+stack:
+  - Next.js
+  - TypeScript
+  - PostgreSQL
+  - Prisma
+  - tRPC
+  - Redis
+  - Docker
+  - Tailwind CSS
+tags:
+  - Enterprise
+  - Full-Stack
+  - B2B
+links:
+  live: https://example.com
+  repo: https://github.com/yourhandle/erp-system
+---
+
+## Overview
+
+The ERP System is an internal platform that replaced a tangle of spreadsheets and
+legacy desktop tools used to run a mid-market manufacturing business. It brings
+**inventory**, **procurement**, **order management**, and **financial reporting**
+into a single, role-aware web application that the whole company depends on daily.
+
+The goal wasn't to build "yet another dashboard" — it was to model the company's
+real operational workflows accurately enough that staff would trust the system as
+the source of truth.
+
+## Challenges
+
+- **Complex domain.** Inventory, purchasing, and accounting are deeply
+  interconnected — a single goods-receipt event touches stock levels, supplier
+  balances, and the general ledger at once.
+- **Data integrity is non-negotiable.** Financial records must always reconcile;
+  there's no room for the eventual-consistency hand-waving you can get away with
+  elsewhere.
+- **Many roles, one system.** Warehouse staff, buyers, and finance each need a
+  different view and different permissions over the same underlying data.
+- **Legacy migration.** Years of historical records had to be imported from
+  inconsistent spreadsheets without corrupting the books.
+
+## Solution
+
+I built the platform on **Next.js** with a fully typed stack end-to-end. **tRPC**
+connects the React frontend to the server without a hand-written API layer, so a
+change to a server procedure surfaces as a type error in the UI immediately.
+**Prisma** models the relational schema over **PostgreSQL**, and every
+multi-entity operation (like a goods receipt) runs inside a database transaction
+so the books can never end up half-updated.
+
+Permissions are enforced server-side in a single authorization layer rather than
+scattered across components, and **Redis** caches expensive aggregate reports
+that would otherwise hammer the database on every dashboard load.
+
+The legacy migration ran through an idempotent import pipeline with a dry-run
+mode, so the team could validate the imported numbers against the old system
+before committing.
+
+## Key Features
+
+- Real-time inventory tracking with automatic low-stock alerts.
+- Purchase-order workflow with multi-step approvals and supplier management.
+- Transactional accounting that keeps the ledger always reconciled.
+- Role-based access control across every module.
+- Exportable financial reports (P&L, stock valuation, aging) cached for speed.
+- Full audit trail on every record change for compliance.
+
+## Results
+
+The platform became the company's operational backbone within its first quarter.
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Monthly stock-count effort | ~3 days | ~2 hours |
+| Order processing time | Manual, ~15 min | Automated, < 1 min |
+| Reporting accuracy | Frequent reconciliation errors | Always reconciled |
+| Tooling | 6+ disconnected spreadsheets | 1 system of record |
+
+Beyond the numbers, the biggest win was trust: staff stopped keeping private
+"shadow spreadsheets" because the system finally reflected reality.

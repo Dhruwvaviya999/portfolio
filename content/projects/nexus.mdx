@@ -1,0 +1,85 @@
+---
+slug: nexus
+title: "Nexus — Real-Time Collaboration Platform"
+summary: "A multiplayer workspace where distributed teams plan, diagram, and present together in real time."
+year: 2024
+role: "Lead Frontend Engineer"
+featured: true
+cover: /images/projects/nexus.png
+stack:
+  - Next.js
+  - React
+  - TypeScript
+  - WebSockets
+  - Node.js
+  - Redis
+  - Three.js
+  - Framer Motion
+tags:
+  - Real-Time
+  - Collaboration
+  - 3D
+links:
+  live: https://example.com
+  repo: https://github.com/yourhandle/nexus
+---
+
+## Overview
+
+Nexus is a real-time collaboration platform — think a shared infinite canvas where
+distributed teams can sketch diagrams, drop notes, and present, all live. Multiple
+people edit the same board simultaneously and see each other's cursors, selections,
+and changes instantly.
+
+It also features an optional **3D presentation mode**, built with Three.js, that
+turns a flat board into a navigable spatial scene for design reviews and demos.
+
+## Challenges
+
+- **Real-time consistency.** When several people edit the same object at once,
+  the result has to converge to one state for everyone — without a "last write
+  wins" that silently discards work.
+- **Latency vs. correctness.** The UI must feel instant locally while staying
+  authoritative on the server.
+- **Performance at scale.** A busy board can hold thousands of elements; both the
+  2D canvas and the 3D scene have to stay at 60fps.
+- **Presence.** Live cursors, selections, and avatars need to feel alive without
+  flooding the network.
+
+## Solution
+
+The editing model uses **optimistic local updates** reconciled against an
+authoritative **Node.js** server over **WebSockets**, so every action feels
+instant while the server remains the source of truth. Per-object operations are
+merged so concurrent edits to different elements never conflict, and **Redis**
+fans out presence and updates across server instances.
+
+The 2D canvas renders with virtualization so only on-screen elements are drawn,
+keeping interactions smooth on large boards. The **3D presentation mode** is a
+**React Three Fiber** scene that mutates objects imperatively in the render loop —
+never through React state per frame — to hold 60fps. **Framer Motion** drives the
+UI transitions and the mode switch between flat and spatial views.
+
+## Key Features
+
+- Multiplayer editing with live cursors, selections, and presence avatars.
+- Optimistic updates with server-authoritative conflict resolution.
+- Infinite, virtualized canvas that stays smooth with thousands of elements.
+- 3D presentation mode for spatial design reviews.
+- Comments, reactions, and per-board permissions.
+- Offline-tolerant: queued changes sync on reconnect.
+
+## Results
+
+Nexus shipped to production and became the team's default planning surface.
+
+| Metric | Result |
+| --- | --- |
+| Sync latency (p95) | < 80ms |
+| Canvas frame rate | 60fps with 2k+ elements |
+| Concurrent editors per board | 25+ without degradation |
+| Adoption | Default tool for planning across the org |
+
+The combination of instant feel and reliable convergence is what made people
+trust it for real work — and the 3D mode turned routine reviews into something
+people actually looked forward to.

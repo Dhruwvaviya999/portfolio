@@ -49,6 +49,39 @@ export interface Project {
   featured?: boolean;
 }
 
+/**
+ * The YAML frontmatter shape of a project MDX file. Identical to `Project`:
+ * the loader validates frontmatter against this and trusts `slug` to match the
+ * filename.
+ */
+export type ProjectFrontmatter = Project;
+
+/** A project's validated metadata plus its raw (uncompiled) MDX body. */
+export interface ProjectWithContent {
+  meta: Project;
+  /** Raw MDX source, compiled at the page level in Section 6. */
+  content: string;
+}
+
+/** Blog post metadata (frontmatter). The case-study body is authored in MDX. */
+export interface BlogPost {
+  slug: string;
+  title: string;
+  summary: string;
+  /** ISO date, e.g. "2025-02-14". */
+  publishedAt: string;
+  tags: string[];
+  cover?: string;
+  /** Excluded from listings/builds when true. */
+  draft?: boolean;
+}
+
+/** A post's validated metadata plus its raw (uncompiled) MDX body. */
+export interface BlogPostWithContent {
+  meta: BlogPost;
+  content: string;
+}
+
 /** A role in the work-history timeline. */
 export interface Experience {
   company: string;

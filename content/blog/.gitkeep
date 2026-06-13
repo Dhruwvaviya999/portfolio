@@ -1,0 +1,5 @@
+# Blog content (MDX) goes here.
+#
+# Posts are `*.mdx` files with frontmatter: title, summary, publishedAt, tags[],
+# optional cover, optional draft. Loaded by lib/content/blog.ts. No posts ship
+# yet — this directory is scaffolded for future content.
