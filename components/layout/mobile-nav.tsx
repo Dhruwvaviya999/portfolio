@@ -1,16 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { FileText, Menu } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
 import { isNavItemActive, mainNav } from "@/lib/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -20,8 +20,10 @@ import {
 
 /**
  * Mobile navigation drawer (shadcn Sheet). Active state is passed down from the
- * Navbar so the scroll-spy observer only runs once. Each link is wrapped in
- * `SheetClose` so tapping it both navigates and dismisses the drawer.
+ * Navbar so the scroll-spy observer only runs once. The Sheet is controlled so
+ * tapping a link both navigates (real `<Link>`, proper link semantics) and
+ * dismisses the drawer — avoiding `SheetClose render={<Link/>}`, which would
+ * apply button semantics to a navigation link.
  */
 export function MobileNav({
   pathname,
@@ -30,8 +32,11 @@ export function MobileNav({
   pathname: string;
   activeSection: string | null;
 }) {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={
           <Button
@@ -56,23 +61,20 @@ export function MobileNav({
           {mainNav.map((item) => {
             const active = isNavItemActive(item, pathname, activeSection);
             return (
-              <SheetClose
+              <Link
                 key={item.href}
-                render={
-                  <Link
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "rounded-md px-2 py-2 text-base transition-colors hover:bg-muted",
-                      active
-                        ? "bg-muted font-medium text-foreground"
-                        : "text-muted-foreground",
-                    )}
-                  />
-                }
+                href={item.href}
+                onClick={close}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "rounded-md px-2 py-2 text-base transition-colors hover:bg-muted",
+                  active
+                    ? "bg-muted font-medium text-foreground"
+                    : "text-muted-foreground",
+                )}
               >
                 {item.label}
-              </SheetClose>
+              </Link>
             );
           })}
         </nav>
@@ -80,19 +82,16 @@ export function MobileNav({
         <Separator className="my-2" />
 
         <div className="px-4">
-          <Button
-            className="w-full"
-            render={
-              <a
-                href={siteConfig.resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              />
-            }
+          <Link
+            href={siteConfig.resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={close}
+            className={cn(buttonVariants(), "w-full")}
           >
             <FileText className="size-4" />
             Resume
-          </Button>
+          </Link>
         </div>
       </SheetContent>
     </Sheet>

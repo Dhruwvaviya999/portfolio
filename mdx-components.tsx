@@ -2,6 +2,7 @@ import type { MDXComponents } from "mdx/types";
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Callout } from "@/components/mdx/callout";
 
 /**
  * Element → component mapping for MDX bodies (project case studies, blog posts).
@@ -121,6 +122,17 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
+  // Markdown images lack intrinsic dimensions, so a styled native <img> is the
+  // pragmatic choice over next/image here.
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
+  img: ({ className, alt, ...props }) => (
+    <img
+      alt={alt ?? ""}
+      loading="lazy"
+      className={cn("my-6 w-full rounded-lg border border-border", className)}
+      {...props}
+    />
+  ),
   table: ({ className, ...props }) => (
     <div className="my-6 w-full overflow-x-auto">
       <table className={cn("w-full border-collapse text-sm", className)} {...props} />
@@ -141,6 +153,8 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
+  // Custom block components available to MDX authors.
+  Callout,
 };
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {

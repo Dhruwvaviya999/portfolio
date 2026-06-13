@@ -113,3 +113,37 @@ export function getAllProjects(): Project[] {
 export function getFeaturedProjects(): Project[] {
   return getAllProjects().filter((project) => project.featured);
 }
+
+/**
+ * Projects related to `slug`, ranked by shared-tag overlap (most first).
+ * Falls back to other projects so the section is never empty.
+ */
+export function getRelatedProjects(slug: string, limit = 3): Project[] {
+  const all = getAllProjects();
+  const current = all.find((project) => project.slug === slug);
+  if (!current) return [];
+
+  return all
+    .filter((project) => project.slug !== slug)
+    .map((project) => ({
+      project,
+      score: project.tags.filter((tag) => current.tags.includes(tag)).length,
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((entry) => entry.project);
+}
+
+/** Previous/next project in display order, for detail-page navigation. */
+export function getAdjacentProjects(slug: string): {
+  prev: Project | null;
+  next: Project | null;
+} {
+  const all = getAllProjects();
+  const index = all.findIndex((project) => project.slug === slug);
+  if (index === -1) return { prev: null, next: null };
+  return {
+    prev: index > 0 ? all[index - 1] : null,
+    next: index < all.length - 1 ? all[index + 1] : null,
+  };
+}

@@ -16,12 +16,12 @@ stack:
   - Three.js
   - Framer Motion
 tags:
+  - Full Stack
+  - Frontend
   - Real-Time
-  - Collaboration
-  - 3D
 links:
   live: https://example.com
-  repo: https://github.com/yourhandle/nexus
+  repo: https://github.com/dhruwvaviya999/nexus
 ---
 
 ## Overview
@@ -33,6 +33,13 @@ and changes instantly.
 
 It also features an optional **3D presentation mode**, built with Three.js, that
 turns a flat board into a navigable spatial scene for design reviews and demos.
+
+## Problem
+
+Remote teams were stitching together a whiteboard tool, a chat app, and a slide
+deck for every planning session. Context was scattered, edits collided, and
+"who changed this?" was unanswerable. They needed one live surface that felt
+instant for everyone in the room — wherever the room was.
 
 ## Challenges
 
@@ -55,10 +62,25 @@ merged so concurrent edits to different elements never conflict, and **Redis**
 fans out presence and updates across server instances.
 
 The 2D canvas renders with virtualization so only on-screen elements are drawn,
-keeping interactions smooth on large boards. The **3D presentation mode** is a
-**React Three Fiber** scene that mutates objects imperatively in the render loop —
-never through React state per frame — to hold 60fps. **Framer Motion** drives the
-UI transitions and the mode switch between flat and spatial views.
+keeping interactions smooth on large boards.
+
+<Callout type="info" title="Why optimistic updates">
+
+Waiting for a server round-trip on every keystroke feels broken. Applying changes
+locally and reconciling against the authoritative server gives instant feedback
+without sacrificing a single source of truth.
+
+</Callout>
+
+## Architecture
+
+- **Next.js + React** front end with a virtualized canvas renderer.
+- **WebSocket** gateway on **Node.js**, with per-board rooms.
+- **Operation-based merge** layer so concurrent edits compose instead of clobber.
+- **Redis** pub/sub to fan presence + ops across horizontally-scaled instances.
+- **React Three Fiber** scene for the 3D presentation mode, mutated imperatively
+  in the render loop (never via React state per frame).
+- **Framer Motion** for UI transitions and the 2D ↔ 3D mode switch.
 
 ## Key Features
 
@@ -68,6 +90,13 @@ UI transitions and the mode switch between flat and spatial views.
 - 3D presentation mode for spatial design reviews.
 - Comments, reactions, and per-board permissions.
 - Offline-tolerant: queued changes sync on reconnect.
+
+## Tech Stack
+
+React and TypeScript drove the interactive front end; WebSockets over a Node.js
+gateway carried real-time ops, with Redis fanning them out across instances.
+React Three Fiber powered the spatial mode, and Framer Motion handled the polish —
+transitions, presence animations, and the mode switch.
 
 ## Results
 
@@ -80,6 +109,25 @@ Nexus shipped to production and became the team's default planning surface.
 | Concurrent editors per board | 25+ without degradation |
 | Adoption | Default tool for planning across the org |
 
+<Callout type="success" title="Outcome">
+
 The combination of instant feel and reliable convergence is what made people
 trust it for real work — and the 3D mode turned routine reviews into something
-people actually looked forward to.
+people looked forward to.
+
+</Callout>
+
+## Lessons Learned
+
+- **Conflict resolution is a product decision, not just an algorithm.** Choosing
+  what "merge" means for each object type mattered more than the transport.
+- **Render with refs, not state.** Driving the canvas and 3D scene imperatively
+  was the difference between 60fps and jank.
+- **Design presence carefully.** Throttling and interpolation kept cursors alive
+  without saturating the network.
+
+## Future Improvements
+
+- CRDT-backed history for full offline editing and time-travel.
+- Voice + video presence layered onto the canvas.
+- An export pipeline from board to slide deck and PDF.

@@ -4,7 +4,7 @@ import { ArrowRight, ChevronDown, Download } from "lucide-react";
 import { profile } from "@/content/profile";
 import { socialLinks } from "@/lib/navigation";
 import { siteConfig } from "@/lib/site";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { FadeIn, SlideUp } from "@/components/motion";
 import { Robot } from "@/components/robot";
 import { SocialIcon } from "@/components/shared/icons";
@@ -56,45 +56,35 @@ export function HeroSection() {
 
           <SlideUp delay={0.32}>
             <div className="flex flex-wrap items-center gap-3">
-              <Button size="lg" render={<a href="#projects" />}>
+              <a href="#projects" className={buttonVariants({ size: "lg" })}>
                 View Projects
                 <ArrowRight className="size-4" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                render={
-                  <a
-                    href={siteConfig.resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  />
-                }
+              </a>
+              <a
+                href={siteConfig.resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({ size: "lg", variant: "outline" })}
               >
                 <Download className="size-4" />
                 Download Resume
-              </Button>
+              </a>
             </div>
           </SlideUp>
 
           <SlideUp delay={0.4}>
             <div className="flex items-center gap-1">
               {socialLinks.map((social) => (
-                <Button
+                <a
                   key={social.label}
-                  variant="ghost"
-                  size="icon"
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
-                  render={
-                    <a
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    />
-                  }
+                  className={buttonVariants({ variant: "ghost", size: "icon" })}
                 >
                   <SocialIcon name={social.icon} className="size-[1.05rem]" />
-                </Button>
+                </a>
               ))}
             </div>
           </SlideUp>

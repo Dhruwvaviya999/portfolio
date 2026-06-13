@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Section } from "@/components/shared/section";
 import { SectionHeading } from "@/components/shared/section-heading";
@@ -43,10 +43,13 @@ export function ProjectsSection() {
       </Stagger>
 
       <Reveal className="mt-12 flex justify-center">
-        <Button variant="outline" size="lg" render={<Link href="/projects" />}>
+        <Link
+          href="/projects"
+          className={buttonVariants({ variant: "outline", size: "lg" })}
+        >
           View All Projects
           <ArrowRight className="size-4" />
-        </Button>
+        </Link>
       </Reveal>
     </Section>
   );
@@ -101,36 +104,26 @@ function ProjectCard({ project }: { project: Project }) {
       {(project.links?.repo || project.links?.live) && (
         <CardFooter className="gap-2">
           {project.links?.repo ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              render={
-                <a
-                  href={project.links.repo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                />
-              }
+            <a
+              href={project.links.repo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
               <SocialIcon name="github" className="size-4" />
               Code
-            </Button>
+            </a>
           ) : null}
           {project.links?.live ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              render={
-                <a
-                  href={project.links.live}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                />
-              }
+            <a
+              href={project.links.live}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
               <ExternalLink className="size-4" />
               Live
-            </Button>
+            </a>
           ) : null}
         </CardFooter>
       )}

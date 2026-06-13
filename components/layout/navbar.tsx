@@ -9,7 +9,7 @@ import { siteConfig } from "@/lib/site";
 import { SECTION_IDS, isNavItemActive, mainNav } from "@/lib/navigation";
 import { useScrolled } from "@/hooks/use-scrolled";
 import { useActiveSection } from "@/hooks/use-active-section";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { MobileNav } from "./mobile-nav";
 
@@ -38,7 +38,10 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 font-semibold tracking-tight"
         >
-          <span className="inline-block size-2 rounded-full bg-brand" aria-hidden="true" />
+          <span
+            className="inline-block size-2 rounded-full bg-brand"
+            aria-hidden="true"
+          />
           {siteConfig.name}
         </Link>
 
@@ -66,20 +69,18 @@ export function Navbar() {
 
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
-          <Button
-            size="sm"
-            className="hidden md:inline-flex"
-            render={
-              <a
-                href={siteConfig.resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              />
-            }
+          <Link
+            href={siteConfig.resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "hidden md:inline-flex",
+            )}
           >
             <FileText className="size-4" />
             Resume
-          </Button>
+          </Link>
           <MobileNav pathname={pathname} activeSection={activeSection} />
         </div>
       </div>
