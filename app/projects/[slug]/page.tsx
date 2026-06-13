@@ -13,6 +13,9 @@ import {
 } from "@/lib/content/projects";
 import { mdxOptions } from "@/lib/mdx";
 import { mdxComponents } from "@/mdx-components";
+import { siteConfig } from "@/lib/site";
+import { breadcrumbJsonLd, projectJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/shared/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { FadeIn, Reveal } from "@/components/motion";
@@ -34,6 +37,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title: project.title,
     description: project.summary,
+    keywords: [...project.tags, ...project.stack],
     alternates: { canonical: `/projects/${slug}` },
     openGraph: {
       title: project.title,
@@ -55,6 +59,14 @@ export default async function ProjectPage({ params }: Params) {
 
   return (
     <main className="flex-1">
+      <JsonLd data={projectJsonLd(meta)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", url: siteConfig.url },
+          { name: "Projects", url: `${siteConfig.url}/projects` },
+          { name: meta.title, url: `${siteConfig.url}/projects/${slug}` },
+        ])}
+      />
       <article className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
         <Breadcrumbs
           items={[

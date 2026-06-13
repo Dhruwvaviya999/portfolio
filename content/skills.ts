@@ -1,47 +1,54 @@
 import type { SkillGroup } from "@/types";
 
 /**
- * Skills, grouped by category. `icon` values are lucide-react icon names
- * resolved at render time; `level` is an optional 0–100 proficiency hint.
- *
- * NOTE: tune the list/levels to the real owner — this is a representative set.
+ * Skills, grouped by category. `icon` is a key into the SkillIcon registry
+ * (components/shared/skill-icon.tsx), which resolves it to a brand logo.
  */
 export const skills: SkillGroup[] = [
   {
     category: "Frontend",
     items: [
-      { name: "React", icon: "atom", level: 95 },
-      { name: "Next.js", icon: "triangle", level: 95 },
-      { name: "TypeScript", icon: "file-code", level: 92 },
-      { name: "Tailwind CSS", icon: "wind", level: 90 },
-      { name: "Framer Motion", icon: "move", level: 80 },
-    ],
-  },
-  {
-    category: "3D & Graphics",
-    items: [
-      { name: "Three.js", icon: "box", level: 78 },
-      { name: "React Three Fiber", icon: "boxes", level: 80 },
-      { name: "GLSL / Shaders", icon: "sparkles", level: 65 },
+      { name: "HTML", icon: "html" },
+      { name: "CSS", icon: "css" },
+      { name: "JavaScript", icon: "javascript" },
+      { name: "React JS", icon: "react" },
+      { name: "Redux", icon: "redux" },
+      { name: "Next JS", icon: "nextjs" },
+      { name: "Tailwind CSS", icon: "tailwind" },
+      { name: "Material UI", icon: "mui" },
+      { name: "Chakra UI", icon: "chakra" },
+      { name: "Bootstrap", icon: "bootstrap" },
     ],
   },
   {
     category: "Backend",
     items: [
-      { name: "Node.js", icon: "server", level: 88 },
-      { name: "PostgreSQL", icon: "database", level: 82 },
-      { name: "Prisma", icon: "layers", level: 80 },
-      { name: "tRPC", icon: "cable", level: 78 },
-      { name: "GraphQL", icon: "share-2", level: 72 },
+      { name: "Node JS", icon: "nodejs" },
+      { name: "Express JS", icon: "express" },
+      { name: "MySQL", icon: "mysql" },
+      { name: "MongoDB", icon: "mongodb" },
+      { name: "Firebase", icon: "firebase" },
+      { name: "PostgreSQL", icon: "postgresql" },
     ],
   },
   {
-    category: "Tooling & DevOps",
+    category: "Languages",
     items: [
-      { name: "Git", icon: "git-branch", level: 90 },
-      { name: "Docker", icon: "container", level: 78 },
-      { name: "Vercel", icon: "triangle", level: 88 },
-      { name: "Vitest / Playwright", icon: "flask-conical", level: 80 },
+      { name: "Python", icon: "python" },
+      { name: "JavaScript", icon: "javascript" },
+      { name: "TypeScript", icon: "typescript" },
+    ],
+  },
+  {
+    category: "Tools",
+    items: [
+      { name: "Git", icon: "git" },
+      { name: "GitHub", icon: "github" },
+      { name: "VS Code", icon: "vscode" },
+      { name: "Postman", icon: "postman" },
+      { name: "Compass", icon: "compass" },
+      { name: "Vercel", icon: "vercel" },
+      { name: "Netlify", icon: "netlify" },
     ],
   },
 ];

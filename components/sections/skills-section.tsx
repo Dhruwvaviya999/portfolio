@@ -1,13 +1,14 @@
 import { skills } from "@/content/skills";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Stagger, StaggerItem } from "@/components/motion";
 import { Section } from "@/components/shared/section";
 import { SectionHeading } from "@/components/shared/section-heading";
+import { SkillIcon } from "@/components/shared/skill-icon";
 
 /**
- * Skills — one premium card per category from the content layer, each holding
- * technology badges. Cards reveal with a staggered entrance and lift on hover.
+ * Skills — one premium card per category from the content layer. Each technology
+ * is a pill showing its brand icon + name. Cards reveal with a staggered
+ * entrance and lift on hover. Icons render server-side (static SVG, no client JS).
  */
 export function SkillsSection() {
   return (
@@ -23,20 +24,19 @@ export function SkillsSection() {
           <StaggerItem key={group.category}>
             <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:ring-brand/40">
               <CardHeader>
-                <CardTitle>{group.category}</CardTitle>
+                <CardTitle className="text-base">{group.category}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
+                <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                   {group.items.map((skill) => (
-                    <Badge
-                      key={skill.name}
-                      variant="secondary"
-                      className="h-7 px-3 text-sm transition-colors hover:bg-brand/15 hover:text-brand"
-                    >
-                      {skill.name}
-                    </Badge>
+                    <li key={skill.name}>
+                      <span className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm transition-colors hover:border-brand/40 hover:bg-background">
+                        <SkillIcon name={skill.icon} className="size-[1.15rem]" />
+                        <span className="truncate">{skill.name}</span>
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </CardContent>
             </Card>
           </StaggerItem>

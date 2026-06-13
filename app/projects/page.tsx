@@ -9,6 +9,14 @@ export const metadata: Metadata = {
   title: "Projects",
   description:
     "Case studies of products I've designed and built — enterprise platforms, dashboards, and real-time tools.",
+  keywords: [
+    "projects",
+    "case studies",
+    "web development",
+    "Next.js",
+    "React",
+    "TypeScript",
+  ],
   alternates: { canonical: "/projects" },
 };
 

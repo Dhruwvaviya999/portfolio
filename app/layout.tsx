@@ -30,22 +30,30 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteConfig.url,
-    title: siteConfig.title,
+    title: `${siteConfig.name} — ${siteConfig.title}`,
     description: siteConfig.description,
     siteName: siteConfig.name,
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.title,
+    title: `${siteConfig.name} — ${siteConfig.title}`,
     description: siteConfig.description,
     creator: siteConfig.author.twitter,
-  },
-  icons: {
-    icon: "/favicon.ico",
   },
 };
 
