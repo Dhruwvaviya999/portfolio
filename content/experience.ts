@@ -8,9 +8,9 @@ import type { Experience } from "@/types";
  */
 export const experience: Experience[] = [
   {
-    company: "Nexus Labs", // TODO
-    role: "Senior Frontend Engineer",
-    start: "2023-04",
+    company: "Shubham Tanks and Liners",
+    role: "Full-Stack Developer",
+    start: "2026-01",
     end: null,
     summary:
       "Lead the web platform team building real-time collaboration tooling used by thousands of teams.",
@@ -22,10 +22,10 @@ export const experience: Experience[] = [
     url: "https://example.com", // TODO
   },
   {
-    company: "Acme ERP", // TODO
-    role: "Full-Stack Engineer",
-    start: "2021-01",
-    end: "2023-03",
+    company: "Shubham Tanks and Liners", // TODO
+    role: "DWA Intern",
+    start: "2025-07",
+    end: "2026-01",
     summary:
       "Built and scaled the modules of an enterprise resource planning platform for mid-market manufacturers.",
     highlights: [
@@ -34,17 +34,5 @@ export const experience: Experience[] = [
       "Mentored two junior engineers and ran the team's code-review process.",
     ],
     url: "https://example.com", // TODO
-  },
-  {
-    company: "Freelance", // TODO
-    role: "Web Developer",
-    start: "2019-06",
-    end: "2020-12",
-    summary:
-      "Designed and shipped marketing sites and web apps for early-stage startups and small businesses.",
-    highlights: [
-      "Shipped 10+ production sites with a focus on performance and accessibility.",
-      "Worked directly with founders to translate product ideas into polished UIs.",
-    ],
   },
 ];

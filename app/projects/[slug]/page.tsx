@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MDXRemote } from "next-mdx-remote/rsc";
 import { Calendar, ExternalLink, User } from "lucide-react";
 
 import {
   getAdjacentProjects,
-  getProject,
+  getProjectEntry,
   getProjectMeta,
   getProjectSlugs,
   getRelatedProjects,
 } from "@/lib/content/projects";
-import { mdxOptions } from "@/lib/mdx";
-import { mdxComponents } from "@/mdx-components";
 import { siteConfig } from "@/lib/site";
 import { breadcrumbJsonLd, projectJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/shared/json-ld";
@@ -50,10 +47,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function ProjectPage({ params }: Params) {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = getProjectEntry(slug);
   if (!project) notFound();
 
-  const { meta, content } = project;
+  const { meta, Body } = project;
   const related = getRelatedProjects(slug, 3);
   const { prev, next } = getAdjacentProjects(slug);
 
@@ -159,9 +156,9 @@ export default async function ProjectPage({ params }: Params) {
           </Reveal>
         </header>
 
-        {/* Case study body */}
+        {/* Case study body (component-based) */}
         <Reveal className="mt-12 max-w-3xl">
-          <MDXRemote source={content} components={mdxComponents} options={mdxOptions} />
+          <Body />
         </Reveal>
       </article>
 
