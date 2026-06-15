@@ -6,7 +6,7 @@ export const meta: Project = {
   title: "Stocker — Inventory Management System",
   summary:
     "A full-stack inventory and stock-management system for tracking products, stock movements, suppliers, and orders in real time.",
-  year: 2025,
+  year: 2026,
   role: "Full-Stack Developer",
   featured: true,
   cover: "/images/projects/stocker.png",
@@ -14,11 +14,11 @@ export const meta: Project = {
     "Next.js",
     "React",
     "TypeScript",
-    "Node.js",
-    "Express",
-    "MongoDB",
+    "PostgreSQL",
+    "Prisma",
+    "Auth.js",
     "Tailwind CSS",
-    "Chart.js",
+    "Shadcn UI",
   ],
   tags: ["Full Stack", "Dashboard", "Enterprise"],
   links: {
@@ -32,132 +32,157 @@ export function StockerCaseStudy() {
     <Prose>
       <h2>Overview</h2>
       <p>
-        Stocker is a full-stack inventory management system that gives small and
-        mid-sized businesses a single place to track <strong>products</strong>,{" "}
-        <strong>stock levels</strong>, <strong>suppliers</strong>, and{" "}
-        <strong>orders</strong>. Every stock movement — purchases in, sales out,
-        adjustments — is recorded, so the on-hand quantity you see is always the
-        quantity you actually have.
+        Stocker is a full-stack inventory management system built for small and
+        mid-sized businesses that need a clear and reliable way to track{" "}
+        <strong>products</strong>, <strong>stock levels</strong>,{" "}
+        <strong>suppliers</strong>, and <strong>orders</strong> in one place. It
+        helps teams manage inventory with better speed, accuracy, and
+        visibility.
       </p>
       <p>
-        A real-time dashboard surfaces low-stock alerts, top products, and sales
-        trends, turning raw stock data into decisions a manager can act on.
+        Every stock movement such as purchase, sale, transfer, or adjustment is
+        recorded, so the on-hand quantity always stays accurate and easy to
+        audit. A real-time dashboard top products, and sales trends to help
+        managers take action quickly.
       </p>
 
       <h2>Problem</h2>
       <p>
-        Most small businesses still run inventory on spreadsheets. Counts drift
-        out of sync the moment two people edit them, stockouts go unnoticed until
-        a customer asks, and there&apos;s no history of who changed what. Owners
-        had no quick answer to simple questions like &quot;what&apos;s running
-        low?&quot; or &quot;what sold best this month?&quot;
+        Many small businesses still manage inventory with spreadsheets or manual
+        updates. This creates problems like wrong stock counts, delayed updates,
+        poor visibility into fast-moving items, and no clear history of stock
+        changes. Teams often do not know what is running low, what is selling
+        well, or when they need to reorder.
       </p>
 
       <h2>Challenges</h2>
       <ul>
         <li>
-          <strong>Stock accuracy.</strong> Every sale, purchase, and adjustment
-          has to update quantities atomically so numbers never drift.
+          <strong>Stock accuracy.</strong> Every stock update had to stay
+          correct across purchases, sales, and adjustments.
         </li>
         <li>
-          <strong>Role-based access.</strong> Owners, managers, and staff need
-          different permissions over products, orders, and reports.
+          <strong>Role-based access.</strong> Different users needed different
+          permissions for products, orders, and reports.
         </li>
         <li>
-          <strong>Fast search at scale.</strong> Finding a product among
-          thousands by name, SKU, or category has to feel instant.
-        </li>
-        <li>
-          <strong>Actionable reporting.</strong> Raw tables aren&apos;t enough —
-          the data needed to become charts and alerts people actually use.
+          <strong>Fast search and filtering.</strong> Users needed to find
+          products quickly by name, article number, brand, color, or size.
         </li>
       </ul>
 
       <h2>Solution</h2>
       <p>
-        Stocker is built on a <strong>MERN-style</strong> stack: a{" "}
-        <strong>React / Next.js</strong> front end talking to a{" "}
-        <strong>Node.js + Express</strong> REST API backed by{" "}
-        <strong>MongoDB</strong>. Authentication uses <strong>JWT</strong> with
-        role-based middleware, so each request is authorized on the server.
+        Stocker is built with a modern <strong>Next.js</strong> and{" "}
+        <strong>React</strong> frontend using <strong>TypeScript</strong> for
+        safer, cleaner code. The backend logic uses <strong>Prisma</strong> with{" "}
+        <strong>PostgreSQL</strong> for reliable data management and structured
+        relationships between companies, products, suppliers, and orders.
       </p>
       <p>
-        Stock changes are modeled as <strong>movements</strong> rather than
-        direct edits to a quantity field — each sale or purchase writes a movement
-        record and updates the product total in one operation, giving both an
-        accurate on-hand count and a complete history.
+        Authentication is handled with <strong>Auth.js</strong>, and forms are
+        built with <strong>React Hook Form</strong> and <strong>Zod</strong> for
+        validation. The UI uses <strong>Tailwind CSS</strong> and{" "}
+        <strong>Shadcn UI</strong>, while <strong>Recharts</strong> is used for
+        dashboard charts and <strong>Nodemailer</strong> is used for email
+        notifications.
       </p>
 
-      <Callout type="info" title="Why movement-based stock">
-        Storing every in/out as a movement (instead of overwriting a number)
-        means the current quantity is always derivable and auditable — you can
-        answer not just &quot;how many&quot; but &quot;why&quot; and &quot;when&quot;.
+      <Callout type="info" title="Why this architecture works">
+        Using PostgreSQL with Prisma gives Stocker a strong and scalable data
+        structure, while Next.js keeps the app fast and flexible for both
+        dashboard pages and business workflows.
       </Callout>
 
       <h2>Architecture</h2>
       <ul>
-        <li>React / Next.js front end with a responsive, dashboard-first UI.</li>
-        <li>Node.js + Express REST API organized by resource (products, orders, suppliers).</li>
-        <li>MongoDB with indexed fields for fast search by name, SKU, and category.</li>
-        <li>JWT auth with role-based middleware (owner / manager / staff).</li>
-        <li>Chart.js dashboards for stock, sales, and low-stock insights.</li>
+        <li>
+          Next.js App Router for fast routing, server rendering, and scalable
+          page structure.
+        </li>
+        <li>
+          React + TypeScript frontend for a clean and maintainable user
+          experience.
+        </li>
+        <li>
+          PostgreSQL database with Prisma ORM for structured inventory data.
+        </li>
+        <li>
+          Auth.js authentication for secure login and user session handling.
+        </li>
+        <li>Role-based permissions for admin, manager, and staff workflows.</li>
+        <li>
+          Recharts-based dashboards for stock trends, and performance insights.
+        </li>
+        <li>Cloudinary support for image uploads and media storage.</li>
       </ul>
 
       <h2>Key Features</h2>
       <ul>
-        <li>Product management (CRUD) with SKU, category, price, and reorder level.</li>
-        <li>Stock in / out with movement history for a full audit trail.</li>
-        <li>Automatic low-stock alerts based on per-product reorder thresholds.</li>
-        <li>Supplier and customer management.</li>
-        <li>Purchase and sales orders that update stock automatically.</li>
-        <li>Dashboard with charts: stock value, sales trends, and top products.</li>
-        <li>Fast search and filtering across the catalog.</li>
-        <li>Role-based access for owners, managers, and staff.</li>
+        <li>Product management with article number, name, price, and stock.</li>
+        <li>Variant handling by size and color.</li>
+        <li>Separate stock tracking for shop and godown locations.</li>
+        <li>Purchase and sales workflows with automatic inventory updates.</li>
+        <li>Supplier management and order tracking.</li>
+        <li>Inventory movement history for full audit visibility.</li>
+        <li>Search and filtering for fast product lookup.</li>
+        <li>Dashboard charts for sales, stock, and product insights.</li>
+        <li>Responsive mobile-first UI for daily use on any device.</li>
       </ul>
 
       <h2>Tech Stack</h2>
       <p>
-        React and Next.js with TypeScript powered the UI and dashboards; Node.js
-        and Express served a typed REST API over MongoDB. Tailwind CSS handled
-        the design system, and Chart.js turned stock and sales data into the
-        visualizations that make the app genuinely useful day to day.
+        Stocker uses <strong>Next.js</strong>, <strong>React</strong>, and{" "}
+        <strong>TypeScript</strong> for the frontend and application layer.
+        <strong>PostgreSQL</strong> and <strong>Prisma</strong> power the data
+        layer, while <strong>Auth.js</strong> handles authentication.
+        <strong>Tailwind CSS</strong> and <strong>Shadcn UI</strong> are used
+        for design, <strong>Zod</strong> and <strong>React Hook Form</strong>{" "}
+        manage form validation, <strong>Recharts</strong> powers analytics,{" "}
+        <strong>Axios</strong> handles requests, and <strong>Nodemailer</strong>{" "}
+        and <strong>Cloudinary</strong> support communication and media.
       </p>
 
       <h2>Results</h2>
       <Metrics
         items={[
-          { label: "Stock tracking", value: "Spreadsheets → real-time" },
-          { label: "Low-stock visibility", value: "Manual checks → auto alerts" },
-          { label: "Product lookup", value: "Instant search by name / SKU" },
-          { label: "Reporting", value: "Live dashboards & charts" },
+          { label: "Stock tracking", value: "Manual sheets → live system" },
+          {
+            label: "Inventory updates",
+            value: "Delayed edits → real-time flow",
+          },
+          { label: "Product lookup", value: "Slow search → fast filtering" },
+          { label: "Reporting", value: "Raw data → dashboards" },
         ]}
       />
+
       <Callout type="success" title="Outcome">
-        Stock counts stay trustworthy because every change is recorded, and the
-        dashboard turns inventory from a chore into a decision-making tool.
+        Stocker makes inventory easier to manage by keeping stock data accurate,
+        improving visibility, and turning day-to-day operations into a simple
+        dashboard-driven workflow.
       </Callout>
 
-      <h2>Lessons Learned</h2>
+      {/* <h2>Lessons Learned</h2>
       <ul>
         <li>
-          <strong>Model events, not just state.</strong> Recording stock
-          movements made history, audits, and reports fall out naturally.
+          <strong>Strong data modeling matters.</strong> A good database
+          structure makes inventory logic much easier to scale.
         </li>
         <li>
-          <strong>Index early.</strong> Adding the right MongoDB indexes kept
-          search fast as the catalog grew.
+          <strong>Validation saves time.</strong> Using Zod and form validation
+          reduced bad input and improved reliability.
         </li>
         <li>
-          <strong>Design the dashboard around questions</strong> users actually
-          ask, not around the tables in the database.
+          <strong>Good dashboards need focus.</strong> The best reports are the
+          ones that answer real business questions quickly.
         </li>
-      </ul>
+      </ul> */}
 
       <h2>Future Improvements</h2>
       <ul>
         <li>Barcode scanning for faster stock-in and checkout.</li>
-        <li>Multi-warehouse support with per-location stock.</li>
-        <li>Exportable PDF / CSV reports and scheduled email summaries.</li>
+        <li>Exportable PDF and CSV reports.</li>
+        <li>Scheduled email summaries and stock alerts.</li>
       </ul>
     </Prose>
   );
