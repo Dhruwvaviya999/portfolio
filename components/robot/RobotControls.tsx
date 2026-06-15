@@ -39,8 +39,6 @@ export function RobotControls({ palette }: { palette: RobotPalette }) {
   const pointer = useRef({ x: 0, y: 0 });
   const hovered = useRef(false);
   const hoverFactor = useRef(0);
-  const scrollY = useRef(0);
-
   const wave = useRef({ active: false, startedAt: 0, nextAt: WAVE_INTERVAL });
   const blink = useRef({ active: false, startedAt: 0, nextAt: BLINK_INTERVAL });
 
@@ -49,14 +47,9 @@ export function RobotControls({ palette }: { palette: RobotPalette }) {
       pointer.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.current.y = (e.clientY / window.innerHeight) * 2 - 1;
     };
-    const onScroll = () => {
-      scrollY.current = window.scrollY;
-    };
     window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("scroll", onScroll);
     };
   }, []);
 
@@ -68,7 +61,8 @@ export function RobotControls({ palette }: { palette: RobotPalette }) {
     hoverFactor.current = damp(hoverFactor.current, hovered.current ? 1 : 0, 6, dt);
     const hf = hoverFactor.current;
 
-    // Body: float + breathing + sway + scroll tilt
+    // Body: float + breathing + gentle idle sway (rotation is user-controlled
+    // via OrbitControls, so no scroll tilt here).
     const g = root.current;
     if (g) {
       g.position.y = Math.sin(t * 1.2) * FLOAT_AMP + hf * 0.06;
@@ -76,8 +70,6 @@ export function RobotControls({ palette }: { palette: RobotPalette }) {
       g.scale.setScalar(breathe);
       g.rotation.z = Math.sin(t * 0.7) * 0.03;
       g.rotation.y = Math.sin(t * 0.4) * 0.05;
-      const scrollTilt = MathUtils.clamp(scrollY.current / 4000, 0, 1) * 0.12;
-      g.rotation.x = damp(g.rotation.x, scrollTilt, 4, dt);
     }
 
     // Head: mouse tracking

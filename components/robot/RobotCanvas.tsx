@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { ContactShadows } from "@react-three/drei";
+import { ContactShadows, OrbitControls } from "@react-three/drei";
 import { useTheme } from "next-themes";
 
 import { RobotControls } from "./RobotControls";
@@ -28,12 +28,26 @@ export default function RobotCanvas({ active = true }: { active?: boolean }) {
       dpr={[1, 1.5]}
       gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       camera={{ position: [0, 0, 7], fov: 35 }}
+      className="cursor-grab active:cursor-grabbing"
     >
       <ambientLight intensity={palette.ambient} />
       <directionalLight position={[4, 6, 5]} intensity={palette.keyLight} />
       <pointLight position={[-4, 1, 3]} color={palette.rimColor} intensity={palette.rimIntensity} />
 
       <RobotControls palette={palette} />
+
+      {/* Drag to rotate the robot 360° in place — no pan/zoom, so the page
+          still scrolls over the canvas and the robot stays centered. */}
+      <OrbitControls
+        makeDefault
+        enablePan={false}
+        enableZoom={false}
+        enableDamping
+        dampingFactor={0.08}
+        rotateSpeed={0.6}
+        minPolarAngle={Math.PI * 0.1}
+        maxPolarAngle={Math.PI * 0.9}
+      />
 
       <ContactShadows
         position={[0, -1.85, 0]}
