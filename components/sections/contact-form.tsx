@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Send } from "lucide-react";
+import { CheckCircle2, Loader2, Send } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
@@ -12,20 +12,55 @@ const fieldClass = cn(
   "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40",
 );
 
+/** Web3Forms access key — sends submissions to the inbox registered with the key. */
+const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+
 /**
- * Contact form — UI only (no backend). Submitting just shows a confirmation
- * state and points to the real email, so the form is honest about not sending.
+ * Contact form — submits to Web3Forms, which delivers the message to the
+ * inbox registered with WEB3FORMS_KEY (dhruwvaviya123@gmail.com).
  */
 export function ContactForm() {
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
 
-  if (submitted) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    setStatus("sending");
+
+    try {
+      const formData = new FormData(form);
+      formData.append("access_key", WEB3FORMS_KEY ?? "");
+      formData.append("subject", "New message from your portfolio contact form");
+      formData.append("from_name", siteConfig.name);
+
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        form.reset();
+        setStatus("sent");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "sent") {
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-card p-8 text-center">
         <CheckCircle2 className="size-10 text-brand" />
         <p className="font-medium">Thanks for reaching out!</p>
         <p className="text-sm text-muted-foreground">
-          This demo form doesn&apos;t send messages yet — please email me directly at{" "}
+          Your message is on its way — I&apos;ll get back to you soon. You can
+          also email me directly at{" "}
           <a
             href={`mailto:${siteConfig.links.email}`}
             className="text-brand hover:underline"
@@ -38,7 +73,7 @@ export function ContactForm() {
           variant="outline"
           size="sm"
           className="mt-2"
-          onClick={() => setSubmitted(false)}
+          onClick={() => setStatus("idle")}
         >
           Send another
         </Button>
@@ -48,10 +83,7 @@ export function ContactForm() {
 
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setSubmitted(true);
-      }}
+      onSubmit={handleSubmit}
       className="space-y-5 rounded-xl border border-border bg-card p-6"
     >
       <div className="space-y-1.5">
@@ -98,9 +130,37 @@ export function ContactForm() {
         />
       </div>
 
-      <Button type="submit" size="lg" className="w-full">
-        <Send className="size-4" />
-        Send message
+      {status === "error" && (
+        <p className="text-sm text-destructive">
+          Something went wrong sending your message. Please try again or email me
+          directly at{" "}
+          <a
+            href={`mailto:${siteConfig.links.email}`}
+            className="font-medium hover:underline"
+          >
+            {siteConfig.links.email}
+          </a>
+          .
+        </p>
+      )}
+
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={status === "sending"}
+      >
+        {status === "sending" ? (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            Sending…
+          </>
+        ) : (
+          <>
+            <Send className="size-4" />
+            Send message
+          </>
+        )}
       </Button>
     </form>
   );
