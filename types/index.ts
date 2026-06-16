@@ -111,6 +111,7 @@ export interface SkillGroup {
 /** Top-level profile / about data. */
 export interface Profile {
   name: string;
+  phone: string;
   title: string;
   tagline: string;
   bio: string;

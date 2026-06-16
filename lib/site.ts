@@ -1,13 +1,3 @@
-/**
- * Global site configuration — the single source of truth for branding,
- * canonical URL, and metadata. Consumed by the root layout (metadataBase +
- * Metadata) and the navigation config.
- *
- * NOTE: values marked `TODO` are placeholders — fill these in with the real
- * owner details before going live.
- */
-
-// Set NEXT_PUBLIC_SITE_URL in the deployment env; falls back for local dev.
 const url = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
 
 export const siteConfig = {
@@ -40,6 +30,7 @@ export const siteConfig = {
     linkedin: "https://linkedin.com/in/dhruwvaviya",
     twitter: "https://twitter.com/yourhandle", // TODO
     email: "dhruwvaviya123@gmail.com",
+    phone: "+91 8591608791",
   },
 } as const;
 
