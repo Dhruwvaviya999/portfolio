@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { Project } from "@/types";
 
 import { ErpSystemCaseStudy, meta as erpSystem } from "./erp-system";
+import { MedygoCaseStudy, meta as medygo } from "./medygo";
 import { StockerCaseStudy, meta as stocker } from "./stocker";
 
 /**
@@ -16,5 +17,6 @@ export interface ProjectEntry {
 
 export const projectEntries: ProjectEntry[] = [
   { meta: stocker, Body: StockerCaseStudy },
+  { meta: medygo, Body: MedygoCaseStudy },
   { meta: erpSystem, Body: ErpSystemCaseStudy },
 ];
