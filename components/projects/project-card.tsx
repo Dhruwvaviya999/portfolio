@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -24,18 +25,28 @@ export function ProjectCard({ project }: { project: Project }) {
 
   return (
     <Card className="group/proj h-full pt-0 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:ring-brand/40">
-      {/* Cover (placeholder) */}
+      {/* Cover image with gradient fallback */}
       <Link
         href={href}
         aria-label={`Read the ${project.title} case study`}
         className="relative block aspect-video w-full overflow-hidden bg-gradient-to-br from-brand/25 via-brand/5 to-transparent"
       >
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 flex items-center justify-center text-7xl font-bold text-brand/15 transition-transform duration-500 group-hover/proj:scale-110"
-        >
-          {project.title.charAt(0)}
-        </span>
+        {project.cover ? (
+          <Image
+            src={project.cover}
+            alt={project.title}
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover/proj:scale-105"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center text-7xl font-bold text-brand/15 transition-transform duration-500 group-hover/proj:scale-110"
+          >
+            {project.title.charAt(0)}
+          </span>
+        )}
         {project.featured ? (
           <Badge className="absolute right-3 top-3">Featured</Badge>
         ) : null}

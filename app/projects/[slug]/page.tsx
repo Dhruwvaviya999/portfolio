@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Calendar, ExternalLink, User } from "lucide-react";
@@ -129,15 +130,26 @@ export default async function ProjectPage({ params }: Params) {
             </div>
           </Reveal>
 
-          {/* Cover (placeholder gradient) */}
+          {/* Cover image with gradient fallback */}
           <FadeIn delay={0.1}>
             <div className="relative mt-10 flex aspect-[16/7] w-full items-center justify-center overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-brand/25 via-brand/5 to-transparent">
-              <span
-                aria-hidden="true"
-                className="text-[8rem] font-bold leading-none text-brand/15"
-              >
-                {meta.title.charAt(0)}
-              </span>
+              {meta.cover ? (
+                <Image
+                  src={meta.cover}
+                  alt={meta.title}
+                  fill
+                  priority
+                  sizes="(min-width: 1280px) 1280px, 100vw"
+                  className="object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="text-[8rem] font-bold leading-none text-brand/15"
+                >
+                  {meta.title.charAt(0)}
+                </span>
+              )}
             </div>
           </FadeIn>
 

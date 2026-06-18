@@ -8,6 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { FadeIn, SlideUp } from "@/components/motion";
 import { Robot } from "@/components/robot";
 import { SocialIcon } from "@/components/shared/icons";
+import { TypingRole } from "@/components/sections/typing-role";
 
 /**
  * Hero — the centerpiece. Intro/CTAs on the left, the interactive robot on the
@@ -44,7 +45,7 @@ export function HeroSection() {
 
           <SlideUp delay={0.16}>
             <p className="text-xl font-medium text-muted-foreground sm:text-2xl">
-              {profile.title}
+              <TypingRole className="text-brand" />
             </p>
           </SlideUp>
 

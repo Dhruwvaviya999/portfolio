@@ -9,7 +9,7 @@ export const meta: Project = {
   year: 2023,
   role: "Full-Stack Engineer",
   featured: true,
-  cover: "/images/projects/erp-system.png",
+  cover: "",
   stack: [
     "Next.js",
     "TypeScript",
