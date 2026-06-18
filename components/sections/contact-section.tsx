@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 
 import { profile } from "@/content/profile";
 import { socialLinks } from "@/lib/navigation";
@@ -59,6 +59,15 @@ export function ContactSection() {
                 </a>
               </li>
             ))}
+            <li className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-lg border border-border bg-muted/40 text-muted-foreground">
+                <Phone className="size-[1.1rem]" />
+              </span>
+              <span>
+                <span className="block text-xs text-muted-foreground">Phone</span>
+                <span className="text-sm font-medium">{profile.phone}</span>
+              </span>
+            </li>
             <li className="flex items-center gap-3">
               <span className="flex size-10 items-center justify-center rounded-lg border border-border bg-muted/40 text-muted-foreground">
                 <MapPin className="size-[1.1rem]" />

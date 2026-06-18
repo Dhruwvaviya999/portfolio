@@ -9,30 +9,30 @@ import type { Experience } from "@/types";
 export const experience: Experience[] = [
   {
     company: "Shubham Tanks and Liners",
-    role: "Full-Stack Developer",
-    start: "2026-01",
+    role: "Full Stack Developer",
+    start: "2026-01-28",
     end: null,
     summary:
-      "Lead the web platform team building real-time collaboration tooling used by thousands of teams.",
+      "Building internal and customer-facing web features for business operations, with a focus on clean UI, fast workflows, and scalable full-stack development.",
     highlights: [
-      "Architected a real-time multiplayer canvas with WebSockets and optimistic updates.",
-      "Cut initial load time by 45% through code-splitting, RSC adoption, and image optimization.",
-      "Established the design-system and component library now used across all products.",
+      "Built and maintained full-stack features using Next.js, React, Node.js, Express.js, Django, MongoDB, and Tailwind CSS.",
+      "Worked on dashboard-style interfaces, form flows, and data-driven pages for business use cases.",
+      "Improved code structure and reusable components to make the app easier to scale and maintain.",
     ],
-    url: "https://example.com", // TODO
+    url: "https://www.shubhamtanks.com",
   },
   {
-    company: "Shubham Tanks and Liners", // TODO
+    company: "Shubham Tanks and Liners",
     role: "DWA Intern",
-    start: "2025-07",
-    end: "2026-01",
+    start: "2025-07-28",
+    end: "2026-01-27",
     summary:
-      "Built and scaled the modules of an enterprise resource planning platform for mid-market manufacturers.",
+      "Learned and built multiple full-stack projects while strengthening frontend, backend, and database skills.",
     highlights: [
-      "Delivered inventory, procurement, and reporting modules end-to-end with Next.js and PostgreSQL.",
-      "Introduced typed APIs (tRPC) that eliminated a class of integration bugs.",
-      "Mentored two junior engineers and ran the team's code-review process.",
+      "Built MERN stack projects using React, Node.js, Express.js, and MongoDB.",
+      "Created authentication, CRUD features, admin panels, and API integrations.",
+      "Practiced component-based UI development and backend logic for real-world applications.",
     ],
-    url: "https://example.com", // TODO
+    url: "https://www.shubhamtanks.com",
   },
 ];
