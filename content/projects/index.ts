@@ -20,10 +20,10 @@ export const projectEntries: ProjectEntry[] = [
   { meta: stocker, Body: StockerCaseStudy },
   { meta: medygo, Body: MedygoCaseStudy },
   // { meta: erpSystem, Body: ErpSystemCaseStudy },
-  { meta: "", Body: ""}, // Set Timer App Project
-  { meta: "", Body: ""}, // Finance Tracker Project
-  { meta: "", Body: ""}, // Snake Game Project
-  { meta: "", Body: ""}, // Travel Tracker Project
-  { meta: "", Body: ""}, // Another Game Project
-  { meta: "", Body: ""}, // Weather Wise Project
+  // { meta: "", Body: ""}, // Set Timer App Project
+  // { meta: "", Body: ""}, // Finance Tracker Project
+  // { meta: "", Body: ""}, // Snake Game Project
+  // { meta: "", Body: ""}, // Travel Tracker Project
+  // { meta: "", Body: ""}, // Another Game Project
+  // { meta: "", Body: ""}, // Weather Wise Project
 ];
