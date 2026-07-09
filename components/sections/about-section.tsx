@@ -7,11 +7,7 @@ import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Section } from "@/components/shared/section";
 import { SectionHeading } from "@/components/shared/section-heading";
 
-/**
- * About — professional summary plus three scannable cards (what I build,
- * current focus, key strengths). Content is local placeholder copy (TODO) since
- * it isn't part of the structured content layer.
- */
+
 const aboutCards: { title: string; icon: LucideIcon; items: string[] }[] = [
   {
     title: "What I build",

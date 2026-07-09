@@ -1,7 +1,7 @@
 import type { Project } from "@/types";
 import { Callout, Metrics, Prose } from "@/components/projects/case-study";
 
-export const meta: Project = {
+export const stocker: Project = {
   slug: "stocker",
   title: "Stocker — Inventory Management System",
   summary:

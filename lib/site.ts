@@ -4,16 +4,16 @@ export const siteConfig = {
   name: "Dhruw Vaviya",
   title: "Software Developer",
   description:
-    "Portfolio of a software engineer building fast, polished web experiences with Next.js, TypeScript, and 3D on the web.", // TODO
+    "Portfolio of a software engineer building fast, polished web experiences with Next.js, TypeScript, and 3D on the web.",
   url,
   /** Dynamic OG image route is generated in Section 7. */
   ogImage: `${url}/opengraph-image`,
   /** Linked from the navbar Resume button. */
-  resumeUrl: "/resume.pdf", // TODO: drop a resume PDF in /public
+  resumeUrl: "/resume.pdf",
   author: {
     name: "Dhruw Vaviya",
     email: "dhruwvaviya123@gmail.com",
-    twitter: "@yourhandle", // TODO
+    twitter: "@yourhandle",
   },
   keywords: [
     "portfolio",
@@ -28,7 +28,7 @@ export const siteConfig = {
   links: {
     github: "https://github.com/dhruwvaviya999",
     linkedin: "https://linkedin.com/in/dhruwvaviya",
-    twitter: "https://twitter.com/yourhandle", // TODO
+    twitter: "https://twitter.com/yourhandle",
     email: "dhruwvaviya123@gmail.com",
     phone: "+91 8591608791",
   },

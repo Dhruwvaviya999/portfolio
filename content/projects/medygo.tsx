@@ -1,7 +1,7 @@
 import type { Project } from "@/types";
 import { Callout, Metrics, Prose } from "@/components/projects/case-study";
 
-export const meta: Project = {
+export const medygo: Project = {
   slug: "medygo",
   title: "Medygo — Doctor Appointment System",
   summary:
@@ -21,8 +21,8 @@ export const meta: Project = {
   ],
   tags: ["Full Stack", "Healthcare", "MERN", "Dashboard"],
   links: {
-    live: "https://example.com",
-    repo: "https://github.com/dhruwvaviya999/medygo",
+    live: "https://medygo.vercel.app",
+    repo: "https://github.com/Dhruwvaviya999/medygo-frontend",
   },
 };
 

@@ -1,9 +1,10 @@
 import type { ComponentType } from "react";
 import type { Project } from "@/types";
 
-import { ErpSystemCaseStudy, meta as erpSystem } from "./erp-system";
-import { MedygoCaseStudy, meta as medygo } from "./medygo";
-import { StockerCaseStudy, meta as stocker } from "./stocker";
+import { ErpSystemCaseStudy, erpSystem } from "./erp-system";
+import { MedygoCaseStudy, medygo } from "./medygo";
+import { StockerCaseStudy, stocker } from "./stocker";
+import { FaSpaghettiMonsterFlying } from "react-icons/fa6";
 
 /**
  * Project registry. Each entry pairs a project's metadata with the React
@@ -18,5 +19,11 @@ export interface ProjectEntry {
 export const projectEntries: ProjectEntry[] = [
   { meta: stocker, Body: StockerCaseStudy },
   { meta: medygo, Body: MedygoCaseStudy },
-  { meta: erpSystem, Body: ErpSystemCaseStudy },
+  // { meta: erpSystem, Body: ErpSystemCaseStudy },
+  { meta: "", Body: ""}, // Set Timer App Project
+  { meta: "", Body: ""}, // Finance Tracker Project
+  { meta: "", Body: ""}, // Snake Game Project
+  { meta: "", Body: ""}, // Travel Tracker Project
+  { meta: "", Body: ""}, // Another Game Project
+  { meta: "", Body: ""}, // Weather Wise Project
 ];
