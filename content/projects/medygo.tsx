@@ -36,8 +36,8 @@ export function MedygoCaseStudy() {
         <strong>admins</strong> in one place. Patients create an account, browse
         doctors by speciality, pick an available time slot, and book an
         appointment. Doctors review incoming requests and either{" "}
-        <strong>accept</strong> or <strong>reject</strong> them, while admins run
-        the platform from a dedicated dashboard.
+        <strong>accept</strong> or <strong>reject</strong> them, while admins
+        run the platform from a dedicated dashboard.
       </p>
       <p>
         The app is built around three distinct roles. Patients and doctors share
@@ -48,10 +48,10 @@ export function MedygoCaseStudy() {
       <h2>Problem</h2>
       <p>
         Booking a doctor&apos;s appointment is still often a phone call, a
-        waiting room, or a manual register. There&apos;s no easy way for patients
-        to see which doctors are available, filter by speciality, or pick a slot
-        that actually works for them — and no clean way for clinics to keep their
-        list of practising doctors accurate and up to date.
+        waiting room, or a manual register. There&apos;s no easy way for
+        patients to see which doctors are available, filter by speciality, or
+        pick a slot that actually works for them — and no clean way for clinics
+        to keep their list of practising doctors accurate and up to date.
       </p>
 
       <h2>Roles</h2>
@@ -86,8 +86,9 @@ export function MedygoCaseStudy() {
           frontend, kept cleanly apart from the patient and doctor experience.
         </li>
         <li>
-          <strong>Doctor lifecycle.</strong> Admins had to add, edit, remove, and
-          activate or deactivate doctors without breaking existing appointments.
+          <strong>Doctor lifecycle.</strong> Admins had to add, edit, remove,
+          and activate or deactivate doctors without breaking existing
+          appointments.
         </li>
       </ul>
 
@@ -116,11 +117,17 @@ export function MedygoCaseStudy() {
 
       <h2>Architecture</h2>
       <ul>
-        <li>React frontend for patients and doctors with role-aware routing.</li>
+        <li>
+          React frontend for patients and doctors with role-aware routing.
+        </li>
         <li>Separate React admin frontend for doctor management.</li>
         <li>Node.js + Express REST API for all business logic.</li>
-        <li>MongoDB with Mongoose schemas for users, doctors, and appointments.</li>
-        <li>JWT-based authentication with role-based authorization middleware.</li>
+        <li>
+          MongoDB with Mongoose schemas for users, doctors, and appointments.
+        </li>
+        <li>
+          JWT-based authentication with role-based authorization middleware.
+        </li>
         <li>Slot validation to prevent double-booking the same doctor.</li>
       </ul>
 
@@ -139,10 +146,10 @@ export function MedygoCaseStudy() {
       <h2>Tech Stack</h2>
       <p>
         Medygo uses <strong>React</strong> and <strong>Tailwind CSS</strong> on
-        the frontend, with <strong>Node.js</strong> and{" "}
-        <strong>Express</strong> powering the API. <strong>MongoDB</strong> and{" "}
-        <strong>Mongoose</strong> handle the data layer, and <strong>JWT</strong>{" "}
-        secures authentication and role-based access.
+        the frontend, with <strong>Node.js</strong> and <strong>Express</strong>{" "}
+        powering the API. <strong>MongoDB</strong> and <strong>Mongoose</strong>{" "}
+        handle the data layer, and <strong>JWT</strong> secures authentication
+        and role-based access.
       </p>
 
       <h2>Results</h2>
@@ -157,8 +164,8 @@ export function MedygoCaseStudy() {
 
       <Callout type="success" title="Outcome">
         Medygo turns appointment booking into a clear, self-service flow for
-        patients while giving doctors control over their schedule and admins full
-        oversight of the doctor roster.
+        patients while giving doctors control over their schedule and admins
+        full oversight of the doctor roster.
       </Callout>
 
       <h2>Future Improvements</h2>

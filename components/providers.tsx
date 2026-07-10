@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LazyMotion, MotionConfig, domAnimation } from "framer-motion";
+import { LazyMotion, MotionConfig, domMax } from "framer-motion";
 import { ThemeProvider } from "@/components/theme-provider";
 
 /**
@@ -12,9 +12,10 @@ import { ThemeProvider } from "@/components/theme-provider";
  * - MotionConfig `reducedMotion="user"`: globally honors the OS
  *   prefers-reduced-motion setting (transforms are skipped, opacity kept) so
  *   accessibility is handled once instead of per-component.
- * - LazyMotion + domAnimation (`strict`): loads only the animation/gesture/
- *   viewport features we use and enforces the lightweight `m.*` components
- *   (using `motion.*` throws), keeping the Framer Motion bundle minimal.
+ * - LazyMotion + domMax (`strict`): enforces the lightweight `m.*` components
+ *   (using `motion.*` throws). `domMax` rather than `domAnimation` because the
+ *   skill tiles use shared-element `layoutId` transitions, which need layout
+ *   projection — a feature `domAnimation` does not bundle.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -25,7 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <MotionConfig reducedMotion="user">
-        <LazyMotion features={domAnimation} strict>
+        <LazyMotion features={domMax} strict>
           {children}
         </LazyMotion>
       </MotionConfig>
