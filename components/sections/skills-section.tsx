@@ -1,13 +1,32 @@
 import { skills } from "@/content/skills";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Section } from "@/components/shared/section";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { SkillTile } from "@/components/shared/skill-tile";
+import { LogoTrain, type TrainSkill } from "@/components/shared/logo-train";
+
+// --- Old category-partitioned imports (kept for reference) ---
+// import { Reveal, Stagger, StaggerItem } from "@/components/motion";
+// import { SkillTile } from "@/components/shared/skill-tile";
 
 /**
- * Skills — each category is a plain heading over a flat grid of icon tiles.
- * Clicking a tile opens a dialog where the logo flips in and a one-line
- * definition explains the tool.
+ * Flatten every category into one list of logos, dropping duplicates by name
+ * ("JavaScript" lives under both Frontend and Languages) so a tool shows once.
+ */
+const allSkills: TrainSkill[] = (() => {
+  const seen = new Set<string>();
+  return skills.flatMap((group) =>
+    group.items
+      .filter((skill) => {
+        if (seen.has(skill.name)) return false;
+        seen.add(skill.name);
+        return true;
+      })
+      .map((skill) => ({ skill, category: group.category })),
+  );
+})();
+
+/**
+ * Skills — just the logos, formed into a "train" that chases the mouse cursor
+ * and trails its path like a comet tail, collapsing into a stack when it stops.
  */
 export function SkillsSection() {
   return (
@@ -15,8 +34,18 @@ export function SkillsSection() {
       <SectionHeading
         eyebrow="Skills"
         title="Tools I work with"
-        description="A pragmatic stack for building fast, polished, maintainable products. Tap any tool to learn what it does."
+        description="A pragmatic stack for building fast, polished, maintainable products. Move your cursor through them."
       />
+
+      <div className="mt-12">
+        <LogoTrain items={allSkills} />
+      </div>
+
+      {/*
+        --- Previous layout: one grid per category (Frontend / Backend /
+        Languages / Tools). Commented out in favour of the logo train above;
+        restore this block (and the imports up top) to bring the category
+        partition back.
 
       <div className="mt-12 space-y-10">
         {skills.map((group) => (
@@ -41,6 +70,7 @@ export function SkillsSection() {
           </Reveal>
         ))}
       </div>
+      */}
     </Section>
   );
 }
