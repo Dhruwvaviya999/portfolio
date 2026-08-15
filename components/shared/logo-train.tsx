@@ -9,10 +9,12 @@ import { SkillIcon } from "@/components/shared/skill-icon";
 export type TrainSkill = { skill: Skill; category: string };
 
 /**
- * Time gap between carriages. Logo `i` chases the point the cursor occupied
- * `i * DELAY_MS` ago, so the train replays the cursor's path — spacing
- * stretches when the mouse moves fast and bunches when it slows, and the
- * whole snake piles back into a stack (tail last) once the cursor rests.
+ * Time gap between carriages. The chain runs in reverse: the *last* logo
+ * leads and carriage rank `r` (counted from the tail of the list) chases the
+ * point the cursor occupied `r * DELAY_MS` ago, so the train replays the
+ * cursor's path — spacing stretches when the mouse moves fast and bunches
+ * when it slows, and the whole snake piles back into a stack once the cursor
+ * rests, with the first logo arriving last.
  */
 const DELAY_MS = 110;
 
@@ -189,16 +191,19 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
       while (hist.length > 1 && hist[0].t < time - maxAge) hist.shift();
     }
 
-    // One backwards walk serves every carriage: delays grow with i, so the
-    // cursor `j` only ever moves toward older samples.
+    // One backwards walk serves every carriage: delays grow with rank, so the
+    // cursor `j` only ever moves toward older samples. Rank runs the chain in
+    // reverse — the *last* logo leads the train and the first trails at the
+    // very end.
     let j = hist.length - 1;
-    for (let i = 0; i < n; i++) {
+    for (let r = 0; r < n; r++) {
+      const i = n - 1 - r;
       // Delayed history sample for this carriage, if one old enough exists.
       let hasSample = false;
       let sx = 0;
       let sy = 0;
       if (!spread.current && hist.length > 0) {
-        const wantT = time - i * DELAY_MS;
+        const wantT = time - r * DELAY_MS;
         while (j >= 0 && hist[j].t > wantT) j--;
         if (j >= 0) {
           hasSample = true;
@@ -262,9 +267,9 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
         {items.map((item) => (
           <span
             key={`${item.category}-${item.skill.name}`}
-            className="flex items-center justify-center rounded-2xl border border-border bg-background p-3 shadow-sm sm:p-4"
+            className="flex items-center justify-center rounded-2xl border border-border bg-background p-2.5 shadow-sm sm:p-3"
           >
-            <SkillIcon name={item.skill.icon} className="size-12 sm:size-16" />
+            <SkillIcon name={item.skill.icon} className="size-10 sm:size-14" />
           </span>
         ))}
       </div>
@@ -303,6 +308,7 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
         history.current.length = 0;
       }}
       className="relative h-[72vh] min-h-125 w-full touch-none select-none"
+      
     >
       {items.map((item, i) => (
         <span
@@ -311,12 +317,20 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
             nodeRefs.current[i] = el;
           }}
           aria-hidden="true"
-          // Head sits on top; each carriage tucks behind the one ahead.
-          style={{ zIndex: items.length - i }}
+          // Over-under weave along the chain: base z RISES from the head
+          // (leading the cursor, bottom-most of the stack) to the tail
+          // (top-most, arriving last), and every second carriage gets a small
+          // boost so it pops above BOTH of its neighbours — above, below,
+          // above, below … without ever lifting the head over the tail end.
+          style={{
+            zIndex:
+              2 * (items.length - i) +
+              ((items.length - 1 - i) % 2 === 1 ? 3 : 0),
+          }}
           className="pointer-events-none absolute top-0 left-0 [will-change:transform]"
         >
-          <span className="flex items-center justify-center rounded-2xl border border-border bg-background p-3 shadow-md sm:p-4">
-            <SkillIcon name={item.skill.icon} className="size-12 sm:size-16" />
+          <span className="flex items-center justify-center rounded-2xl border border-border bg-background p-2.5 shadow-md sm:p-3">
+            <SkillIcon name={item.skill.icon} className="size-10 sm:size-14" />
           </span>
         </span>
       ))}
