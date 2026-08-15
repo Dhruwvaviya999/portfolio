@@ -32,7 +32,7 @@ const SCATTER_MS = 900;
 const REGATHER_MS = 750;
 
 /**
- * Shape of the scatter/regather journeys: 0 = constant speed, towards 1 =
+ * Shape of the regather journeys: 0 = constant speed, towards 1 =
  * launch fast, breathe slower through the middle, then speed up again to
  * land — smooth (sinusoidal) the whole way. 0.55 ≈ 1.55x speed at the two
  * ends and 0.45x at the midpoint.
@@ -46,11 +46,6 @@ const JITTER = 0.8;
 /** Keep every logo (and its plate) this far from the container edges so it
  *  never rides up over the "Tools I work with" heading. */
 const EDGE = 64;
-
-/** Scatter size range: every flung logo lands at its own random scale inside
- *  this range, so the burst reads as a lively mix of small and large icons. */
-const SCALE_MIN = 0.55;
-const SCALE_MAX = 1.55;
 
 /** How far (px) the cursor must travel after a scatter click before the
  *  train wakes up and regathers — filters out the micro-jitter of the click
@@ -73,6 +68,15 @@ const clamp = (v: number, lo: number, hi: number) =>
 const journeyEase = (t: number) =>
   t + (MID_SLOWDOWN * Math.sin(2 * Math.PI * t)) / (2 * Math.PI);
 
+/** Damped-spring response for the click-burst: flies out fast, overshoots
+ *  its destination (~12%), and wobbles back to rest like a spring. */
+const burstEase = (t: number) => 1 - Math.exp(-6 * t) * Math.cos(9 * t);
+
+/** Hard cap (px) on how far past its destination a bouncing logo may
+ *  overshoot, so long flings still bounce but never sail over the heading
+ *  or out of the section. */
+const BOUNCE_MAX_PX = 24;
+
 type Sample = { x: number; y: number; t: number };
 
 /**
@@ -83,13 +87,13 @@ type Sample = { x: number; y: number; t: number };
  * cursor takes off, and rejoin one by one after a scatter.
  *
  * Click to fling the logos to jittered spots across the section (never above
- * the heading), each landing at its own random size — a mix of small and
- * large icons. They stay scattered until the cursor genuinely moves again
- * (REGATHER_MOVE_PX filters the click's own jitter); then the history
- * restarts and the train re-forms carriage by carriage at normal size. Both
- * the burst out and the journey back are timed tweens with a fast–slow–fast
- * profile (see MID_SLOWDOWN) rather than raw easing pulls, so they launch
- * quickly, breathe through the middle, and land decisively.
+ * the heading). Each fling is a damped-spring tween (burstEase): it shoots
+ * out, overshoots its landing spot, and bounces back to rest — a springy
+ * landing at the destination. The logos stay scattered until the cursor
+ * genuinely moves again (REGATHER_MOVE_PX filters the click's own jitter);
+ * then the history restarts and the train re-forms carriage by carriage,
+ * each journey back a fast–slow–fast tween (see MID_SLOWDOWN) that launches
+ * quickly, breathes through the middle, and lands decisively.
  *
  * Positions live in refs and are written straight to the DOM inside a single
  * animation frame, so the 25-logo chain never triggers a React re-render.
@@ -104,11 +108,6 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
   const target = useRef({ x: 0, y: 0 });
   const spread = useRef(false);
   const seeded = useRef(false);
-
-  // Per-logo render scale (eased toward scaleTo every frame). Scatter hands
-  // each logo a random size; regathering eases everyone back to 1.
-  const scale = useRef(items.map(() => 1));
-  const scaleTo = useRef(items.map(() => 1));
 
   // Where the cursor was when the scatter click landed, so we can tell a
   // real wake-up move from the click's own micro-jitter.
@@ -237,14 +236,24 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
 
       if (m === M_BURST) {
         const k = clamp((time - journeyT0.current[i]) / journeyDur.current[i], 0, 1);
-        const e = journeyEase(k);
-        pts[i].x =
-          journeyFrom.current[i].x +
-          (scatterTo.current[i].x - journeyFrom.current[i].x) * e;
-        pts[i].y =
-          journeyFrom.current[i].y +
-          (scatterTo.current[i].y - journeyFrom.current[i].y) * e;
-        if (k >= 1) mode.current[i] = M_PINNED;
+        if (k >= 1) {
+          // Wobble finished: settle exactly on the destination.
+          pts[i].x = scatterTo.current[i].x;
+          pts[i].y = scatterTo.current[i].y;
+          mode.current[i] = M_PINNED;
+        } else {
+          const jdx = scatterTo.current[i].x - journeyFrom.current[i].x;
+          const jdy = scatterTo.current[i].y - journeyFrom.current[i].y;
+          let e = burstEase(k);
+          if (e > 1) {
+            // Springy landing: cap the overshoot in pixels so long flings
+            // bounce too, without sailing far past their landing spot.
+            const dist = Math.hypot(jdx, jdy) || 1;
+            e = 1 + Math.min((e - 1) * dist, BOUNCE_MAX_PX) / dist;
+          }
+          pts[i].x = journeyFrom.current[i].x + jdx * e;
+          pts[i].y = journeyFrom.current[i].y + jdy * e;
+        }
       } else if (m === M_PINNED) {
         // Parked. The moment this carriage's slot in the history exists,
         // its turn has come: launch the journey back to the train.
@@ -279,10 +288,9 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
     }
 
     for (let i = 0; i < n; i++) {
-      scale.current[i] += (scaleTo.current[i] - scale.current[i]) * follow;
       const el = nodeRefs.current[i];
       if (el) {
-        el.style.transform = `translate3d(${pts[i].x}px, ${pts[i].y}px, 0) translate(-50%, -50%) scale(${scale.current[i]})`;
+        el.style.transform = `translate3d(${pts[i].x}px, ${pts[i].y}px, 0) translate(-50%, -50%)`;
       }
     }
   });
@@ -314,15 +322,14 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
         target.current.x = x;
         target.current.y = y;
         // A genuine move after a scatter click wakes the train back up:
-        // restart the path so carriages rejoin one by one (each easing back
-        // to normal size). The distance gate ignores the click's own jitter.
+        // restart the path so carriages rejoin one by one. The distance gate
+        // ignores the click's own jitter.
         if (spread.current) {
           const dx = x - scatterOrigin.current.x;
           const dy = y - scatterOrigin.current.y;
           if (Math.hypot(dx, dy) > REGATHER_MOVE_PX) {
             spread.current = false;
             history.current.length = 0;
-            for (let i = 0; i < items.length; i++) scaleTo.current[i] = 1;
           }
         }
       }}
@@ -347,9 +354,6 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
           journeyT0.current[i] = clock.current;
           // Slight variance so the sheet of logos doesn't move in lockstep.
           journeyDur.current[i] = SCATTER_MS * (0.85 + Math.random() * 0.3);
-          // Every logo lands at its own size — a mix of small and large.
-          scaleTo.current[i] =
-            SCALE_MIN + Math.random() * (SCALE_MAX - SCALE_MIN);
         }
       }}
       onPointerLeave={() => {
