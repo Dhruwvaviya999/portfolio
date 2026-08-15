@@ -47,6 +47,16 @@ const JITTER = 0.8;
  *  never rides up over the "Tools I work with" heading. */
 const EDGE = 64;
 
+/** Scatter size range: every flung logo lands at its own random scale inside
+ *  this range, so the burst reads as a lively mix of small and large icons. */
+const SCALE_MIN = 0.55;
+const SCALE_MAX = 1.55;
+
+/** How far (px) the cursor must travel after a scatter click before the
+ *  train wakes up and regathers — filters out the micro-jitter of the click
+ *  itself so the burst doesn't instantly un-scatter. */
+const REGATHER_MOVE_PX = 14;
+
 /** Milliseconds of cursor history to retain beyond the deepest delay. */
 const HISTORY_SLACK = 1000;
 
@@ -72,10 +82,12 @@ type Sample = { x: number; y: number; t: number };
  * simply stays put, the carriages peel out of the stack one by one when the
  * cursor takes off, and rejoin one by one after a scatter.
  *
- * Press and hold to fling the logos to jittered spots across the section
- * (never above the heading); they stay pinned while held. On release the
- * history restarts, so the train re-forms carriage by carriage. Both the
- * burst out and the journey back are timed tweens with a fast–slow–fast
+ * Click to fling the logos to jittered spots across the section (never above
+ * the heading), each landing at its own random size — a mix of small and
+ * large icons. They stay scattered until the cursor genuinely moves again
+ * (REGATHER_MOVE_PX filters the click's own jitter); then the history
+ * restarts and the train re-forms carriage by carriage at normal size. Both
+ * the burst out and the journey back are timed tweens with a fast–slow–fast
  * profile (see MID_SLOWDOWN) rather than raw easing pulls, so they launch
  * quickly, breathe through the middle, and land decisively.
  *
@@ -92,6 +104,15 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
   const target = useRef({ x: 0, y: 0 });
   const spread = useRef(false);
   const seeded = useRef(false);
+
+  // Per-logo render scale (eased toward scaleTo every frame). Scatter hands
+  // each logo a random size; regathering eases everyone back to 1.
+  const scale = useRef(items.map(() => 1));
+  const scaleTo = useRef(items.map(() => 1));
+
+  // Where the cursor was when the scatter click landed, so we can tell a
+  // real wake-up move from the click's own micro-jitter.
+  const scatterOrigin = useRef({ x: 0, y: 0 });
 
   // Per-logo journey state (modes above). Journeys interpolate from a frozen
   // start point so their pacing is fully under journeyEase's control.
@@ -237,13 +258,18 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
       } else if (m === M_REJOIN) {
         // Homing tween: the destination is the *live* delayed sample, so the
         // journey lands on the moving train, not where it used to be.
-        const k = clamp((time - journeyT0.current[i]) / journeyDur.current[i], 0, 1);
-        const e = journeyEase(k);
         if (hasSample) {
+          const k = clamp((time - journeyT0.current[i]) / journeyDur.current[i], 0, 1);
+          const e = journeyEase(k);
           pts[i].x = journeyFrom.current[i].x + (sx - journeyFrom.current[i].x) * e;
           pts[i].y = journeyFrom.current[i].y + (sy - journeyFrom.current[i].y) * e;
+          if (k >= 1) mode.current[i] = M_FOLLOW;
+        } else {
+          // History vanished mid-journey (e.g. the cursor left the section
+          // and the buffer restarted). Pause the tween clock so the flight
+          // resumes smoothly instead of jump-cutting when samples return.
+          journeyT0.current[i] += delta;
         }
-        if (k >= 1) mode.current[i] = M_FOLLOW;
       } else if (hasSample) {
         // M_FOLLOW: trail the delayed cursor history. No sample old enough
         // (fresh buffer) means hold still until this carriage's moment comes.
@@ -253,9 +279,10 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
     }
 
     for (let i = 0; i < n; i++) {
+      scale.current[i] += (scaleTo.current[i] - scale.current[i]) * follow;
       const el = nodeRefs.current[i];
       if (el) {
-        el.style.transform = `translate3d(${pts[i].x}px, ${pts[i].y}px, 0) translate(-50%, -50%)`;
+        el.style.transform = `translate3d(${pts[i].x}px, ${pts[i].y}px, 0) translate(-50%, -50%) scale(${scale.current[i]})`;
       }
     }
   });
@@ -282,12 +309,37 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
       onPointerMove={(e) => {
         const rect = containerRef.current?.getBoundingClientRect();
         if (!rect) return;
-        target.current.x = e.clientX - rect.left;
-        target.current.y = e.clientY - rect.top;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        target.current.x = x;
+        target.current.y = y;
+        // A genuine move after a scatter click wakes the train back up:
+        // restart the path so carriages rejoin one by one (each easing back
+        // to normal size). The distance gate ignores the click's own jitter.
+        if (spread.current) {
+          const dx = x - scatterOrigin.current.x;
+          const dy = y - scatterOrigin.current.y;
+          if (Math.hypot(dx, dy) > REGATHER_MOVE_PX) {
+            spread.current = false;
+            history.current.length = 0;
+            for (let i = 0; i < items.length; i++) scaleTo.current[i] = 1;
+          }
+        }
       }}
-      onPointerDown={() => {
+      onPointerDown={(e) => {
+        // Stamp the origin from the event itself: on touch (or after a
+        // scroll under a stationary cursor) no pointermove precedes the tap,
+        // so target.current would be stale and the wake gate would fire on
+        // the click's own jitter.
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (rect) {
+          target.current.x = e.clientX - rect.left;
+          target.current.y = e.clientY - rect.top;
+        }
         buildScatter();
         spread.current = true;
+        scatterOrigin.current.x = target.current.x;
+        scatterOrigin.current.y = target.current.y;
         for (let i = 0; i < items.length; i++) {
           mode.current[i] = M_BURST;
           journeyFrom.current[i].x = points.current[i].x;
@@ -295,17 +347,15 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
           journeyT0.current[i] = clock.current;
           // Slight variance so the sheet of logos doesn't move in lockstep.
           journeyDur.current[i] = SCATTER_MS * (0.85 + Math.random() * 0.3);
+          // Every logo lands at its own size — a mix of small and large.
+          scaleTo.current[i] =
+            SCALE_MIN + Math.random() * (SCALE_MAX - SCALE_MIN);
         }
       }}
-      onPointerUp={() => {
-        spread.current = false;
-        // Restart the path: carriages rejoin one by one as their history
-        // slots refill, each on its own fast–slow–fast journey.
-        history.current.length = 0;
-      }}
       onPointerLeave={() => {
-        spread.current = false;
-        history.current.length = 0;
+        // Mid-float, leaving just resets the path. A scattered burst stays
+        // exactly where it is until the cursor comes back and moves.
+        if (!spread.current) history.current.length = 0;
       }}
       className="relative h-[72vh] min-h-125 w-full touch-none select-none"
       
@@ -321,11 +371,15 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
           // (leading the cursor, bottom-most of the stack) to the tail
           // (top-most, arriving last), and every second carriage gets a small
           // boost so it pops above BOTH of its neighbours — above, below,
-          // above, below … without ever lifting the head over the tail end.
+          // above, below … The tail (first item, i === 0) is pinned strictly
+          // highest so the weave boost can never lift its neighbour over the
+          // final, last-arriving carriage.
           style={{
             zIndex:
-              2 * (items.length - i) +
-              ((items.length - 1 - i) % 2 === 1 ? 3 : 0),
+              i === 0
+                ? 2 * items.length + 5
+                : 2 * (items.length - i) +
+                  ((items.length - 1 - i) % 2 === 1 ? 3 : 0),
           }}
           className="pointer-events-none absolute top-0 left-0 [will-change:transform]"
         >
