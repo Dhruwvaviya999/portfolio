@@ -23,7 +23,7 @@ export const experience: Experience[] = [
   },
   {
     company: "Shubham Tanks and Liners",
-    role: "DWA Intern",
+    role: "Full Stack Developer Intern",
     start: "2025-07-28",
     end: "2026-01-27",
     summary:
