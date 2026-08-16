@@ -45,16 +45,6 @@ export const skills: SkillGroup[] = [
         description: "A utility-first CSS framework for styling directly in markup without leaving your component.",
       },
       {
-        name: "Material UI",
-        icon: "mui",
-        description: "A React component library implementing Google's Material Design system.",
-      },
-      {
-        name: "Chakra UI",
-        icon: "chakra",
-        description: "An accessible React component library built for fast, composable interfaces.",
-      },
-      {
         name: "Bootstrap",
         icon: "bootstrap",
         description: "A CSS framework offering a responsive grid and ready-made components.",

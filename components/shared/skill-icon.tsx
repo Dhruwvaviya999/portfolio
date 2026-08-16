@@ -1,7 +1,6 @@
 import type { IconType } from "react-icons";
 import {
   SiBootstrap,
-  SiChakraui,
   SiCss,
   SiExpress,
   SiFirebase,
@@ -46,7 +45,6 @@ const ICONS: Record<string, { Icon: IconType; color?: string }> = {
   nextjs: { Icon: SiNextdotjs },
   tailwind: { Icon: SiTailwindcss, color: "#06B6D4" },
   mui: { Icon: SiMui, color: "#007FFF" },
-  chakra: { Icon: SiChakraui, color: "#319795" },
   bootstrap: { Icon: SiBootstrap, color: "#7952B3" },
   nodejs: { Icon: SiNodedotjs, color: "#5FA04E" },
   express: { Icon: SiExpress },
