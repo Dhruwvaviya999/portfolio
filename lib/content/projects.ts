@@ -46,6 +46,8 @@ export function getFeaturedProjects(): Project[] {
   return getAllProjects().filter((project) => project.featured);
 }
 
+console.log(getAllProjects().map((p) => p.slug)); // Debugging: log all project slugs
+
 /**
  * Projects related to `slug`, ranked by shared-tag overlap (most first).
  * Falls back to other projects so the section is never empty.

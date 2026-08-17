@@ -100,6 +100,8 @@ export interface Skill {
   name: string;
   icon?: string;
   level?: number;
+  /** One-line explanation, surfaced in the skill detail dialog. */
+  description?: string;
 }
 
 /** A named group of related skills (e.g. "Frontend", "Tooling"). */

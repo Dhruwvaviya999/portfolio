@@ -42,6 +42,14 @@ export function RobotControls({ palette }: { palette: RobotPalette }) {
   const wave = useRef({ active: false, startedAt: 0, nextAt: WAVE_INTERVAL });
   const blink = useRef({ active: false, startedAt: 0, nextAt: BLINK_INTERVAL });
 
+  // Our own animation clock. R3F resets `clock.elapsedTime` to 0 whenever the
+  // `frameloop` prop flips (we pause the loop off-screen), which would yank
+  // `t` backwards past the timestamps stored in the blink/wave refs — a blink
+  // caught mid-flight then extrapolates lerp(1, 0.1, negative) and stretches
+  // the eyes into giant beams. Accumulating clamped deltas keeps t monotonic
+  // and smooth across pauses, tab switches, and frameloop toggles.
+  const localTime = useRef(0);
+
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       pointer.current.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -53,9 +61,10 @@ export function RobotControls({ palette }: { palette: RobotPalette }) {
     };
   }, []);
 
-  useFrame((state, delta) => {
-    const t = state.clock.elapsedTime;
+  useFrame((_state, delta) => {
     const dt = Math.min(delta, 0.05); // clamp to avoid jumps after tab switch
+    localTime.current += dt;
+    const t = localTime.current;
 
     // Hover easing
     hoverFactor.current = damp(hoverFactor.current, hovered.current ? 1 : 0, 6, dt);

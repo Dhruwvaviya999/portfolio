@@ -1,14 +1,32 @@
 import { skills } from "@/content/skills";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Stagger, StaggerItem } from "@/components/motion";
 import { Section } from "@/components/shared/section";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { SkillIcon } from "@/components/shared/skill-icon";
+import { LogoTrain, type TrainSkill } from "@/components/shared/logo-train";
+
+// --- Old category-partitioned imports (kept for reference) ---
+// import { Reveal, Stagger, StaggerItem } from "@/components/motion";
+// import { SkillTile } from "@/components/shared/skill-tile";
 
 /**
- * Skills — one premium card per category from the content layer. Each technology
- * is a pill showing its brand icon + name. Cards reveal with a staggered
- * entrance and lift on hover. Icons render server-side (static SVG, no client JS).
+ * Flatten every category into one list of logos, dropping duplicates by name
+ * ("JavaScript" lives under both Frontend and Languages) so a tool shows once.
+ */
+const allSkills: TrainSkill[] = (() => {
+  const seen = new Set<string>();
+  return skills.flatMap((group) =>
+    group.items
+      .filter((skill) => {
+        if (seen.has(skill.name)) return false;
+        seen.add(skill.name);
+        return true;
+      })
+      .map((skill) => ({ skill, category: group.category })),
+  );
+})();
+
+/**
+ * Skills — just the logos, formed into a "train" that chases the mouse cursor
+ * and trails its path like a comet tail, collapsing into a stack when it stops.
  */
 export function SkillsSection() {
   return (
@@ -16,32 +34,43 @@ export function SkillsSection() {
       <SectionHeading
         eyebrow="Skills"
         title="Tools I work with"
-        description="A pragmatic stack for building fast, polished, maintainable products."
+        description="A pragmatic stack for building fast, polished, maintainable products. Move your cursor through them."
       />
 
-      <Stagger className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div className="mt-12">
+        <LogoTrain items={allSkills} />
+      </div>
+
+      {/*
+        --- Previous layout: one grid per category (Frontend / Backend /
+        Languages / Tools). Commented out in favour of the logo train above;
+        restore this block (and the imports up top) to bring the category
+        partition back.
+
+      <div className="mt-12 space-y-10">
         {skills.map((group) => (
-          <StaggerItem key={group.category}>
-            <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:ring-brand/40">
-              <CardHeader>
-                <CardTitle className="text-base">{group.category}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-                  {group.items.map((skill) => (
-                    <li key={skill.name}>
-                      <span className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm transition-colors hover:border-brand/40 hover:bg-background">
-                        <SkillIcon name={skill.icon} className="size-[1.15rem]" />
-                        <span className="truncate">{skill.name}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </StaggerItem>
+          <Reveal key={group.category}>
+            <div className="mb-4 flex items-center gap-4">
+              <h3 className="font-mono text-xs font-semibold tracking-widest text-brand uppercase">
+                {group.category}
+              </h3>
+              <span
+                aria-hidden="true"
+                className="h-px flex-1 bg-gradient-to-r from-border to-transparent"
+              />
+            </div>
+
+            <Stagger className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+              {group.items.map((skill) => (
+                <StaggerItem key={`${group.category}-${skill.name}`}>
+                  <SkillTile skill={skill} category={group.category} />
+                </StaggerItem>
+              ))}
+            </Stagger>
+          </Reveal>
         ))}
-      </Stagger>
+      </div>
+      */}
     </Section>
   );
 }
