@@ -49,19 +49,21 @@ export const lightPalette: RobotPalette = {
   shadowColor: "#1c2a44",
 };
 
-// Dark: dark metallic surfaces, brighter glowing accents.
+// Dark: dark metallic surfaces, brighter glowing accents. Body is kept a few
+// lightness steps above the page background (~oklch 0.145) so the shell never
+// melts into it.
 export const darkPalette: RobotPalette = {
-  body: "#2a3142",
+  body: "#3d4a68",
   accent: "#4A70A9",
   joint: "#8FABD4",
   eye: "#9fc4ff",
   emissive: 1.3,
   metalness: 0.45,
   roughness: 0.55,
-  ambient: 0.55,
-  keyLight: 0.85,
+  ambient: 0.7,
+  keyLight: 0.95,
   rimColor: "#8FABD4",
-  rimIntensity: 0.55,
+  rimIntensity: 0.6,
   shadowOpacity: 0.5,
   shadowColor: "#000000",
 };

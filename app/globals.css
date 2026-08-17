@@ -123,8 +123,8 @@
   /* Brand accent + procedural robot tokens (read by the R3F robot in Section 4). */
   --brand: oklch(0.7 0.16 256);
   --brand-foreground: oklch(0.205 0 0);
-  --robot-body: oklch(0.38 0.01 256); /* dark metal shell */
-  --robot-body-accent: oklch(0.28 0.015 256);
+  --robot-body: oklch(0.42 0.03 256); /* dark metal shell, lifted above bg */
+  --robot-body-accent: oklch(0.32 0.03 256);
   --robot-joint: oklch(0.5 0.02 256);
   --robot-eye: oklch(0.8 0.17 200); /* brighter cyan glow in dark */
   --robot-rim: oklch(0.7 0.16 256);
