@@ -1,16 +1,19 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
-import { ContactShadows, OrbitControls } from "@react-three/drei";
+import { useEffect } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { ContactShadows, Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import { useTheme } from "next-themes";
 
 import { RobotControls } from "./RobotControls";
 import { darkPalette, lightPalette } from "./RobotModel";
 
 /**
- * The R3F scene: minimal camera, lighting, and contact shadows around the
- * robot. Reads the theme *outside* the Canvas and passes a palette down as
- * props (R3F's reconciler doesn't inherit next-themes' React context).
+ * The R3F scene: minimal camera, lighting, a baked Lightformer environment
+ * (what makes the metals read as metal — no network assets, no HDR files),
+ * and contact shadows around the robot. Reads the theme *outside* the Canvas
+ * and passes a palette down as props (R3F's reconciler doesn't inherit
+ * next-themes' React context).
  *
  * Heavy (three.js): only ever mounted via `dynamic(ssr:false)` from `index`,
  * so it stays out of the initial bundle and never server-renders.
@@ -18,9 +21,25 @@ import { darkPalette, lightPalette } from "./RobotModel";
  * `active` toggles the render loop — set to false when off-screen to stop the
  * rAF loop and save CPU/GPU.
  */
+
+/**
+ * The Environment below bakes once (`frames={1}`), which requires a rendered
+ * frame — if the canvas mounts (or the env remounts on theme change) while
+ * `frameloop="never"`, the metals would stay black until the loop resumes.
+ * This kicks one frame on mount and whenever `dep` (the theme) changes.
+ */
+function Kick({ dep }: { dep: string | undefined }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    invalidate();
+  }, [invalidate, dep]);
+  return null;
+}
+
 export default function RobotCanvas({ active = true }: { active?: boolean }) {
   const { resolvedTheme } = useTheme();
-  const palette = resolvedTheme === "dark" ? darkPalette : lightPalette;
+  const dark = resolvedTheme === "dark";
+  const palette = dark ? darkPalette : lightPalette;
 
   return (
     <Canvas
@@ -30,9 +49,61 @@ export default function RobotCanvas({ active = true }: { active?: boolean }) {
       camera={{ position: [0, 0, 7], fov: 35 }}
       className="cursor-grab active:cursor-grabbing"
     >
+      <Kick dep={resolvedTheme} />
       <ambientLight intensity={palette.ambient} />
       <directionalLight position={[4, 6, 5]} intensity={palette.keyLight} />
       <pointLight position={[-4, 1, 3]} color={palette.rimColor} intensity={palette.rimIntensity} />
+
+      {/* Local studio-strip environment: long reflections that sell the
+          brushed-metal shell. No preset => zero network fetches; no
+          `background` => the canvas alpha stays transparent. `key` forces a
+          re-bake on theme change (frames={1} bakes exactly once). */}
+      <Environment key={resolvedTheme} resolution={256} frames={1}>
+        {/* overhead softbox */}
+        <Lightformer
+          form="rect"
+          color="#ffffff"
+          intensity={dark ? 2.8 : 3}
+          position={[0, 5, -1]}
+          rotation-x={Math.PI / 2}
+          scale={[10, 10, 1]}
+        />
+        {/* paired thin left strips -> long streaks on the chamfers */}
+        <Lightformer
+          form="rect"
+          color="#ffffff"
+          intensity={dark ? 1.2 : 1.5}
+          position={[-5, 1, 1]}
+          rotation-y={Math.PI / 2}
+          scale={[12, 0.8, 1]}
+        />
+        <Lightformer
+          form="rect"
+          color="#ffffff"
+          intensity={dark ? 0.8 : 1.0}
+          position={[-5, -0.5, 1]}
+          rotation-y={Math.PI / 2}
+          scale={[12, 0.4, 1]}
+        />
+        {/* brand-blue right strip */}
+        <Lightformer
+          form="rect"
+          color="#8FABD4"
+          intensity={dark ? 1.6 : 1.2}
+          position={[5, 0.5, 0]}
+          rotation-y={-Math.PI / 2}
+          scale={[12, 1, 1]}
+        />
+        {/* front fill -> catch-light in the black visor glass */}
+        <Lightformer
+          form="rect"
+          color="#ffffff"
+          intensity={dark ? 0.6 : 0.8}
+          position={[0, 0.5, 5]}
+          rotation-y={Math.PI}
+          scale={[8, 2, 1]}
+        />
+      </Environment>
 
       <RobotControls palette={palette} />
 
