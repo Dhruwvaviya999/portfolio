@@ -13,6 +13,7 @@ export const weatherWise: Project = {
   stack: ["React", "Vite", "Axios", "JavaScript"],
   tags: ["Frontend", "React", "API"],
   links: {
+    repo: "https://github.com/Dhruwvaviya999/weather-app",
     live: "https://weatherwise-ui.vercel.app",
   },
 };
@@ -22,8 +23,8 @@ export function WeatherWiseCaseStudy() {
     <Prose>
       <h2>Overview</h2>
       <p>
-        Weather Wise is a focused frontend app that does one thing well: the user
-        searches for a city, and the app fetches and displays that
+        Weather Wise is a focused frontend app that does one thing well: the
+        user searches for a city, and the app fetches and displays that
         city&apos;s current weather. Built with <strong>React</strong> and{" "}
         <strong>Vite</strong>, with <strong>Axios</strong> handling the API
         requests.
@@ -32,12 +33,13 @@ export function WeatherWiseCaseStudy() {
       <h2>Challenges</h2>
       <ul>
         <li>
-          <strong>Async state.</strong> Every search is a network request, so the
-          UI needed clear loading and error states rather than a blank screen.
+          <strong>Async state.</strong> Every search is a network request, so
+          the UI needed clear loading and error states rather than a blank
+          screen.
         </li>
         <li>
-          <strong>Bad input.</strong> Misspelled or non-existent cities return an
-          error from the API, and that had to surface as a readable message.
+          <strong>Bad input.</strong> Misspelled or non-existent cities return
+          an error from the API, and that had to surface as a readable message.
         </li>
       </ul>
 

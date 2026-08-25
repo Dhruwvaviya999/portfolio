@@ -22,7 +22,7 @@ export const stocker: Project = {
   ],
   tags: ["Full Stack", "Dashboard", "Enterprise"],
   links: {
-    live: "https://example.com",
+    live: "",
     repo: "https://github.com/dhruwvaviya999/stocker",
   },
 };

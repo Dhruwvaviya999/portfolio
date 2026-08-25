@@ -9,7 +9,7 @@ export const financely: Project = {
   year: 2024,
   role: "Full Stack Developer",
   featured: true,
-  cover: "",
+  cover: "/images/projects/financely.png",
   stack: [
     "React",
     "Vite",
@@ -19,6 +19,10 @@ export const financely: Project = {
     "Papa Parse",
   ],
   tags: ["Full Stack", "Finance", "Dashboard", "Analytics"],
+  links: {
+    live: "my-financely.vercel.app",
+    repo: "https://github.com/Dhruwvaviya999/financely-finance-tracker",
+  },
 };
 
 export function FinancelyCaseStudy() {
@@ -28,9 +32,9 @@ export function FinancelyCaseStudy() {
       <p>
         Financely is a personal finance tracker that turns scattered spending
         into a clear picture. Users log their <strong>income</strong> and{" "}
-        <strong>expenses</strong>, watch their <strong>balance</strong> update in
-        real time, and explore where the money actually went through charts and
-        analytics.
+        <strong>expenses</strong>, watch their <strong>balance</strong> update
+        in real time, and explore where the money actually went through charts
+        and analytics.
       </p>
       <p>
         Every transaction lands in a searchable, sortable table that can be
@@ -90,8 +94,14 @@ export function FinancelyCaseStudy() {
       <ul>
         <li>React + Vite SPA with React Router for page-level routing.</li>
         <li>Firebase Authentication for sign-up and login.</li>
-        <li>Firestore as the transaction store, read live via react-firebase-hooks.</li>
-        <li>Ant Design for the component layer and Ant Design Charts for analytics.</li>
+        <li>
+          Firestore as the transaction store, read live via
+          react-firebase-hooks.
+        </li>
+        <li>
+          Ant Design for the component layer and Ant Design Charts for
+          analytics.
+        </li>
         <li>Papa Parse for CSV import and export of transaction history.</li>
         <li>Moment.js for date formatting and time-based grouping.</li>
       </ul>
@@ -111,11 +121,11 @@ export function FinancelyCaseStudy() {
       <h2>Tech Stack</h2>
       <p>
         <strong>React</strong> and <strong>Vite</strong> form the frontend, with{" "}
-        <strong>Ant Design</strong> and <strong>Ant Design Charts</strong> for UI
-        and visualisation. <strong>Firebase</strong> provides auth and data,{" "}
+        <strong>Ant Design</strong> and <strong>Ant Design Charts</strong> for
+        UI and visualisation. <strong>Firebase</strong> provides auth and data,{" "}
         <strong>React Router</strong> handles navigation,{" "}
-        <strong>Papa Parse</strong> covers CSV, <strong>Moment.js</strong> handles
-        dates, and <strong>React Toastify</strong> delivers feedback.
+        <strong>Papa Parse</strong> covers CSV, <strong>Moment.js</strong>{" "}
+        handles dates, and <strong>React Toastify</strong> delivers feedback.
       </p>
 
       <h2>Results</h2>
