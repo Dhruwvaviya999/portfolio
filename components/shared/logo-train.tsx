@@ -9,27 +9,40 @@ import { SkillIcon } from "@/components/shared/skill-icon";
 export type TrainSkill = { skill: Skill; category: string };
 
 /**
- * Time gap between carriages. The chain runs in reverse: the *last* logo
- * leads and carriage rank `r` (counted from the tail of the list) chases the
- * point the cursor occupied `r * DELAY_MS` ago, so the train replays the
- * cursor's path — spacing stretches when the mouse moves fast and bunches
- * when it slows, and the whole snake piles back into a stack once the cursor
- * rests, with the first logo arriving last.
+ * Time gap between carriages. Carriage rank `r` chases the point the cursor
+ * occupied `r * DELAY_MS` ago, so the train replays the cursor's path —
+ * spacing stretches when the mouse moves fast and bunches when it slows, and
+ * the whole snake piles back into a stack once the cursor rests.
+ *
+ * Ranks are a *mapping*, not the item order: at mount the chain runs in
+ * reverse (the last logo leads), and every regather re-deals the ranks by
+ * distance to the cursor — see `order`. After a scatter this same delay is
+ * the launch stagger: rank r's slot exists r * DELAY_MS after the wake, so
+ * the logos come home one by one, closest first.
  */
-const DELAY_MS = 110;
+const DELAY_MS = 80;
 
 /** Ease toward the delayed target while trailing, normalised to a 60fps
  *  frame. Lower = calmer, silkier trail; higher = sharper corners. */
-const FOLLOW = 0.17;
+const FOLLOW = 0.4;
 
 /** How long the click-burst journey takes, per logo (ms). Each logo gets a
  *  touch of random variance so the burst shimmers instead of moving as one
  *  rigid sheet. */
 const SCATTER_MS = 900;
 
+/** How long the pull into the cursor takes on a click (ms), before the burst
+ *  radiates back out from that exact point. */
+const GATHER_MS = 340;
+
 /** How long a logo's journey back from its scattered spot to the train
  *  takes (ms), once its turn in the queue comes up. */
-const REGATHER_MS = 750;
+const REGATHER_MS = 700;
+
+/** Minimum distance (px) every scatter destination keeps from the click
+ *  point, so the burst always pushes the logos clear of the cursor instead
+ *  of parking one on top of it. */
+const SPREAD_CLEAR_PX = 170;
 
 /**
  * Shape of the regather journeys: 0 = constant speed, towards 1 =
@@ -58,8 +71,9 @@ const HISTORY_SLACK = 1000;
 /** Per-logo animation modes. */
 const M_FOLLOW = 0; // trailing the delayed cursor history
 const M_BURST = 1; // journeying out to its scattered spot
-const M_PINNED = 2; // parked at its scattered spot, waiting for its turn
+const M_PINNED = 2; // parked at its scattered spot, waiting for its slot
 const M_REJOIN = 3; // journeying from the scattered spot back to the train
+const M_GATHER = 4; // being pulled into the cursor before a fresh burst
 
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(Math.max(v, lo), hi);
@@ -69,31 +83,58 @@ const journeyEase = (t: number) =>
   t + (MID_SLOWDOWN * Math.sin(2 * Math.PI * t)) / (2 * Math.PI);
 
 /** Damped-spring response for the click-burst: flies out fast, overshoots
- *  its destination (~12%), and wobbles back to rest like a spring. */
-const burstEase = (t: number) => 1 - Math.exp(-6 * t) * Math.cos(9 * t);
+ *  its destination (~20%), and wobbles back to rest like a medium-strength
+ *  spring — the higher frequency makes the recoil read clearly but settle
+ *  fast. The 3.5π frequency puts t=1 exactly on a cosine zero crossing, so
+ *  e(1) = 1 and the settle branch is a true no-op (no end-of-wobble snap). */
+const burstEase = (t: number) =>
+  1 - Math.exp(-5.5 * t) * Math.cos(3.5 * Math.PI * t);
+
+/** Smooth pull for the gather-to-cursor phase (smoothstep). */
+const gatherEase = (t: number) => t * t * (3 - 2 * t);
 
 /** Hard cap (px) on how far past its destination a bouncing logo may
  *  overshoot, so long flings still bounce but never sail over the heading
- *  or out of the section. */
-const BOUNCE_MAX_PX = 24;
+ *  or out of the section. Must stay <= EDGE minus the plate half-extent
+ *  (~41px at the sm size) so a bounce at the padded boundary can never
+ *  cross the container edge. */
+const BOUNCE_MAX_PX = 22;
+
+/**
+ * Stacking for carriage rank r of n. Base z RISES from the head (leading the
+ * cursor, bottom-most of the stack) to the tail (top-most, arriving last),
+ * and every second carriage gets a small boost so it pops above BOTH of its
+ * neighbours — an over-under weave. The tail is pinned strictly highest so
+ * the weave boost can never lift its neighbour over the final, last-arriving
+ * carriage.
+ */
+const zForRank = (r: number, n: number) =>
+  r === n - 1 ? 2 * n + 5 : 2 * (r + 1) + (r % 2 === 1 ? 3 : 0);
 
 type Sample = { x: number; y: number; t: number };
 
 /**
  * A "train" of logos that replays the cursor's path. Every frame the (clamped)
- * pointer position is pushed into a history buffer; logo `i` eases toward the
- * sample from `i * DELAY_MS` ago. Because a logo with no sample old enough
- * simply stays put, the carriages peel out of the stack one by one when the
- * cursor takes off, and rejoin one by one after a scatter.
+ * pointer position is pushed into a history buffer; the carriage holding rank
+ * `r` eases toward the sample from `r * DELAY_MS` ago. Because a carriage
+ * with no sample old enough simply stays put, the logos peel out of the stack
+ * one by one when the cursor takes off, and rejoin one by one after a scatter.
  *
- * Click to fling the logos to jittered spots across the section (never above
- * the heading). Each fling is a damped-spring tween (burstEase): it shoots
- * out, overshoots its landing spot, and bounces back to rest — a springy
- * landing at the destination. The logos stay scattered until the cursor
- * genuinely moves again (REGATHER_MOVE_PX filters the click's own jitter);
- * then the history restarts and the train re-forms carriage by carriage,
- * each journey back a fast–slow–fast tween (see MID_SLOWDOWN) that launches
- * quickly, breathes through the middle, and lands decisively.
+ * Click to fling the logos outward from the cursor to jittered spots across
+ * the section (never above the heading). Every click first pulls the logos
+ * into the cursor (M_GATHER, a quick smoothstep suction), then bursts them
+ * out from that exact point — so a second click at a new spot visibly
+ * re-originates the spread there. Each burst is a damped-spring tween
+ * (burstEase): it shoots out, overshoots its landing spot (~18%, capped),
+ * and bounces back to rest.
+ *
+ * The logos stay scattered until the cursor genuinely moves again
+ * (REGATHER_MOVE_PX filters the click's own jitter). That move re-deals the
+ * ranks by distance — closest logo becomes the head, farthest the tail — so
+ * the launch queue and the train slots are one and the same: rank r's slot
+ * exists r * DELAY_MS after the wake, and each logo flies straight onto its
+ * own live slot in the re-forming train (the stack itself while the cursor
+ * rests) on a fast–slow–fast journey. Closest first, one by one, no parking.
  *
  * Positions live in refs and are written straight to the DOM inside a single
  * animation frame, so the 25-logo chain never triggers a React re-render.
@@ -109,9 +150,22 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
   const spread = useRef(false);
   const seeded = useRef(false);
 
+  // rank -> logo index. order[0] is the head. Starts as the reversed item
+  // order (last logo leads) and is re-dealt by cursor distance on every
+  // regather, so "closest comes home first" and "slot r opens at r * delay"
+  // describe the same queue.
+  const order = useRef(items.map((_, r) => items.length - 1 - r));
+  // Set when `order` changes so the z-weave is rewritten to follow the new
+  // chain before the next paint.
+  const zDirty = useRef(false);
+
   // Where the cursor was when the scatter click landed, so we can tell a
   // real wake-up move from the click's own micro-jitter.
   const scatterOrigin = useRef({ x: 0, y: 0 });
+
+  // The click point every gather journey pulls into and every burst radiates
+  // from.
+  const gatherPoint = useRef({ x: 0, y: 0 });
 
   // Per-logo journey state (modes above). Journeys interpolate from a frozen
   // start point so their pacing is fully under journeyEase's control.
@@ -124,8 +178,10 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
   const clock = useRef(0);
 
   /** Fling every logo to a shuffled, jittered grid cell inside the padded
-   *  area, so the burst covers the whole section but looks random. */
-  const buildScatter = () => {
+   *  area, so the burst covers the whole section but looks random. Cells
+   *  landing inside SPREAD_CLEAR_PX of the click point (ox, oy) are pushed
+   *  radially out of it, so the spread always leaves the cursor clear. */
+  const buildScatter = (ox: number, oy: number) => {
     const c = containerRef.current;
     if (!c) return;
     const rect = c.getBoundingClientRect();
@@ -156,16 +212,26 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
     const jx = (w / cols) * JITTER;
     const jy = (h / rows) * JITTER;
     for (let i = 0; i < n; i++) {
-      scatterTo.current[i].x = clamp(
-        cells[i].x + (Math.random() - 0.5) * jx,
-        EDGE,
-        rect.width - EDGE,
-      );
-      scatterTo.current[i].y = clamp(
-        cells[i].y + (Math.random() - 0.5) * jy,
-        EDGE,
-        rect.height - EDGE,
-      );
+      let x = clamp(cells[i].x + (Math.random() - 0.5) * jx, EDGE, rect.width - EDGE);
+      let y = clamp(cells[i].y + (Math.random() - 0.5) * jy, EDGE, rect.height - EDGE);
+      const dx = x - ox;
+      const dy = y - oy;
+      const d = Math.hypot(dx, dy);
+      if (d < SPREAD_CLEAR_PX) {
+        if (d < 1) {
+          // Degenerate: the cell sits on the click point — pick a spoke.
+          const a = (i / n) * Math.PI * 2;
+          x = ox + Math.cos(a) * SPREAD_CLEAR_PX;
+          y = oy + Math.sin(a) * SPREAD_CLEAR_PX;
+        } else {
+          x = ox + (dx / d) * SPREAD_CLEAR_PX;
+          y = oy + (dy / d) * SPREAD_CLEAR_PX;
+        }
+        x = clamp(x, EDGE, rect.width - EDGE);
+        y = clamp(y, EDGE, rect.height - EDGE);
+      }
+      scatterTo.current[i].x = x;
+      scatterTo.current[i].y = y;
     }
   };
 
@@ -211,13 +277,11 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
       while (hist.length > 1 && hist[0].t < time - maxAge) hist.shift();
     }
 
-    // One backwards walk serves every carriage: delays grow with rank, so the
-    // cursor `j` only ever moves toward older samples. Rank runs the chain in
-    // reverse — the *last* logo leads the train and the first trails at the
-    // very end.
+    // One backwards walk serves every carriage: delays grow with rank, so
+    // the cursor `j` only ever moves toward older samples.
     let j = hist.length - 1;
     for (let r = 0; r < n; r++) {
-      const i = n - 1 - r;
+      const i = order.current[r];
       // Delayed history sample for this carriage, if one old enough exists.
       let hasSample = false;
       let sx = 0;
@@ -234,10 +298,28 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
 
       const m = mode.current[i];
 
-      if (m === M_BURST) {
+      if (m === M_GATHER) {
+        // Suction into the click point; on arrival, flip straight into the
+        // burst so the spread visibly radiates from the cursor itself.
+        const k = clamp((time - journeyT0.current[i]) / journeyDur.current[i], 0, 1);
+        const e = gatherEase(k);
+        pts[i].x = journeyFrom.current[i].x + (gatherPoint.current.x - journeyFrom.current[i].x) * e;
+        pts[i].y = journeyFrom.current[i].y + (gatherPoint.current.y - journeyFrom.current[i].y) * e;
+        if (k >= 1) {
+          mode.current[i] = M_BURST;
+          journeyFrom.current[i].x = gatherPoint.current.x;
+          journeyFrom.current[i].y = gatherPoint.current.y;
+          journeyT0.current[i] = time;
+          // Slight variance so the sheet of logos doesn't move in lockstep.
+          journeyDur.current[i] = SCATTER_MS * (0.85 + Math.random() * 0.3);
+        }
+      } else if (m === M_BURST) {
         const k = clamp((time - journeyT0.current[i]) / journeyDur.current[i], 0, 1);
         if (k >= 1) {
-          // Wobble finished: settle exactly on the destination.
+          // Wobble finished: settle exactly on the destination. If the wake
+          // move already fired while this logo was still in flight
+          // (click-then-drag), its slot may even exist already — M_PINNED
+          // hands it into the queue on the very next frame.
           pts[i].x = scatterTo.current[i].x;
           pts[i].y = scatterTo.current[i].y;
           mode.current[i] = M_PINNED;
@@ -256,7 +338,8 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
         }
       } else if (m === M_PINNED) {
         // Parked. The moment this carriage's slot in the history exists,
-        // its turn has come: launch the journey back to the train.
+        // its turn has come: ranks were dealt by distance at the wake, so
+        // slots open closest-first, one every DELAY_MS. Launch home.
         if (hasSample) {
           mode.current[i] = M_REJOIN;
           journeyFrom.current[i].x = pts[i].x;
@@ -265,25 +348,33 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
           journeyDur.current[i] = REGATHER_MS;
         }
       } else if (m === M_REJOIN) {
-        // Homing tween: the destination is the *live* delayed sample, so the
-        // journey lands on the moving train, not where it used to be.
-        if (hasSample) {
+        // Homing tween onto this carriage's *live* slot in the re-forming
+        // train — the stack itself while the cursor rests, a point on the
+        // replayed path once it moves. The slot exists for as long as the
+        // history does; if a pointer-leave wipes the history mid-flight,
+        // park where we are and let M_PINNED relaunch when it returns.
+        if (!hasSample) {
+          mode.current[i] = M_PINNED;
+        } else {
           const k = clamp((time - journeyT0.current[i]) / journeyDur.current[i], 0, 1);
           const e = journeyEase(k);
           pts[i].x = journeyFrom.current[i].x + (sx - journeyFrom.current[i].x) * e;
           pts[i].y = journeyFrom.current[i].y + (sy - journeyFrom.current[i].y) * e;
           if (k >= 1) mode.current[i] = M_FOLLOW;
-        } else {
-          // History vanished mid-journey (e.g. the cursor left the section
-          // and the buffer restarted). Pause the tween clock so the flight
-          // resumes smoothly instead of jump-cutting when samples return.
-          journeyT0.current[i] += delta;
         }
       } else if (hasSample) {
         // M_FOLLOW: trail the delayed cursor history. No sample old enough
         // (fresh buffer) means hold still until this carriage's moment comes.
         pts[i].x += (sx - pts[i].x) * follow;
         pts[i].y += (sy - pts[i].y) * follow;
+      }
+    }
+
+    if (zDirty.current) {
+      zDirty.current = false;
+      for (let r = 0; r < n; r++) {
+        const el = nodeRefs.current[order.current[r]];
+        if (el) el.style.zIndex = String(zForRank(r, n));
       }
     }
 
@@ -321,15 +412,24 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
         const y = e.clientY - rect.top;
         target.current.x = x;
         target.current.y = y;
-        // A genuine move after a scatter click wakes the train back up:
-        // restart the path so carriages rejoin one by one. The distance gate
-        // ignores the click's own jitter.
+        // A genuine move after a scatter click wakes the train back up. The
+        // distance gate ignores the click's own jitter. Waking re-deals the
+        // ranks by distance to the cursor — closest logo becomes the head —
+        // then restarts the path, so the slot queue brings them home
+        // closest-first, one every DELAY_MS.
         if (spread.current) {
           const dx = x - scatterOrigin.current.x;
           const dy = y - scatterOrigin.current.y;
           if (Math.hypot(dx, dy) > REGATHER_MOVE_PX) {
             spread.current = false;
             history.current.length = 0;
+            const pts = points.current;
+            order.current.sort(
+              (a, b) =>
+                Math.hypot(pts[a].x - x, pts[a].y - y) -
+                Math.hypot(pts[b].x - x, pts[b].y - y),
+            );
+            zDirty.current = true;
           }
         }
       }}
@@ -343,17 +443,32 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
           target.current.x = e.clientX - rect.left;
           target.current.y = e.clientY - rect.top;
         }
-        buildScatter();
         spread.current = true;
         scatterOrigin.current.x = target.current.x;
         scatterOrigin.current.y = target.current.y;
+        // Every click re-originates the spread at the cursor: pull each logo
+        // into the click point first (gather), then burst out from it. Works
+        // identically for the first click (the stacked train is already at
+        // the cursor, so the gather is near-instant) and for re-clicks from
+        // anywhere on screen — no drift, journeys are absolute.
+        gatherPoint.current.x = clamp(
+          target.current.x,
+          EDGE,
+          (rect?.width ?? 0) - EDGE,
+        );
+        gatherPoint.current.y = clamp(
+          target.current.y,
+          EDGE,
+          (rect?.height ?? 0) - EDGE,
+        );
+        buildScatter(gatherPoint.current.x, gatherPoint.current.y);
         for (let i = 0; i < items.length; i++) {
-          mode.current[i] = M_BURST;
+          mode.current[i] = M_GATHER;
           journeyFrom.current[i].x = points.current[i].x;
           journeyFrom.current[i].y = points.current[i].y;
           journeyT0.current[i] = clock.current;
-          // Slight variance so the sheet of logos doesn't move in lockstep.
-          journeyDur.current[i] = SCATTER_MS * (0.85 + Math.random() * 0.3);
+          // Slight variance so the pull doesn't move as one rigid sheet.
+          journeyDur.current[i] = GATHER_MS * (0.9 + Math.random() * 0.2);
         }
       }}
       onPointerLeave={() => {
@@ -362,7 +477,6 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
         if (!spread.current) history.current.length = 0;
       }}
       className="relative h-[72vh] min-h-125 w-full touch-none select-none"
-      
     >
       {items.map((item, i) => (
         <span
@@ -371,20 +485,10 @@ export function LogoTrain({ items }: { items: TrainSkill[] }) {
             nodeRefs.current[i] = el;
           }}
           aria-hidden="true"
-          // Over-under weave along the chain: base z RISES from the head
-          // (leading the cursor, bottom-most of the stack) to the tail
-          // (top-most, arriving last), and every second carriage gets a small
-          // boost so it pops above BOTH of its neighbours — above, below,
-          // above, below … The tail (first item, i === 0) is pinned strictly
-          // highest so the weave boost can never lift its neighbour over the
-          // final, last-arriving carriage.
-          style={{
-            zIndex:
-              i === 0
-                ? 2 * items.length + 5
-                : 2 * (items.length - i) +
-                  ((items.length - 1 - i) % 2 === 1 ? 3 : 0),
-          }}
+          // Initial z-weave for the mount-time reversed chain (item i holds
+          // rank n-1-i). Rewritten from the rAF whenever the ranks are
+          // re-dealt — see zForRank.
+          style={{ zIndex: zForRank(items.length - 1 - i, items.length) }}
           className="pointer-events-none absolute top-0 left-0 [will-change:transform]"
         >
           <span className="flex items-center justify-center rounded-2xl border border-border bg-background p-2.5 shadow-md sm:p-3">
