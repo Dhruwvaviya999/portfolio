@@ -20,11 +20,11 @@ export type TrainSkill = { skill: Skill; category: string };
  * the launch stagger: rank r's slot exists r * DELAY_MS after the wake, so
  * the logos come home one by one, closest first.
  */
-const DELAY_MS = 110;
+const DELAY_MS = 80;
 
 /** Ease toward the delayed target while trailing, normalised to a 60fps
  *  frame. Lower = calmer, silkier trail; higher = sharper corners. */
-const FOLLOW = 0.17;
+const FOLLOW = 0.4;
 
 /** How long the click-burst journey takes, per logo (ms). Each logo gets a
  *  touch of random variance so the burst shimmers instead of moving as one
