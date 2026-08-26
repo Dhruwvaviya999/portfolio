@@ -30,14 +30,17 @@ const allSkills: TrainSkill[] = (() => {
  */
 export function SkillsSection() {
   return (
-    <Section id="skills" className="bg-muted/30">
+    <Section id="skills" className="overflow-x-clip bg-muted/30">
       <SectionHeading
         eyebrow="Skills"
         title="Tools I work with"
         description="A pragmatic stack for building fast, polished, maintainable products. Move your cursor through them."
       />
 
-      <div className="mt-12">
+      {/* Full-bleed breakout: the train plays across the entire viewport
+          width, not just the centered content column. The Section root clips
+          the scrollbar-width overflow of 100vw. */}
+      <div className="mx-[calc(50%-50vw)] mt-12 w-screen">
         <LogoTrain items={allSkills} />
       </div>
 
