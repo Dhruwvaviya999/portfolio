@@ -29,7 +29,7 @@ export function HeroSection() {
 
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-8">
         {/* Left: intro */}
-        <div className="flex flex-col items-start gap-5">
+        <div className="flex flex-col items-center gap-5 text-center lg:items-start lg:text-left">
           <SlideUp>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-sm text-muted-foreground">
               <span className="size-2 animate-pulse rounded-full bg-brand" />
@@ -56,7 +56,7 @@ export function HeroSection() {
           </SlideUp>
 
           <SlideUp delay={0.32}>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <a href="#projects" className={buttonVariants({ size: "lg" })}>
                 View Projects
                 <ArrowRight className="size-4" />
@@ -74,7 +74,7 @@ export function HeroSection() {
           </SlideUp>
 
           <SlideUp delay={0.4}>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center justify-center gap-1 lg:justify-start">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}

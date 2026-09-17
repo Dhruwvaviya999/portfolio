@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import { useTheme } from "next-themes";
@@ -37,6 +37,22 @@ function Kick({ dep }: { dep: string | undefined }) {
 }
 
 export default function RobotCanvas({ active = true }: { active?: boolean }) {
+  // Touch devices split the gesture: horizontal drag spins the robot, vertical
+  // swipe scrolls the page. OrbitControls hard-sets `touch-action: none` inline
+  // on the canvas (which would trap scroll inside the robot), so we override it
+  // with `touch-pan-y!` — a CSS `!important` rule beats that inline style, and
+  // the browser then hands us only the horizontal gestures. Vertical swipes
+  // fire `pointercancel`, which OrbitControls treats as pointer-up, so a
+  // scroll never leaves the controls in a half-dragged state.
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(pointer: coarse)");
+    const evaluate = () => setTouch(mql.matches);
+    evaluate();
+    mql.addEventListener("change", evaluate);
+    return () => mql.removeEventListener("change", evaluate);
+  }, []);
+
   const { resolvedTheme } = useTheme();
   const dark = resolvedTheme === "dark";
   const palette = dark ? darkPalette : lightPalette;
@@ -47,7 +63,7 @@ export default function RobotCanvas({ active = true }: { active?: boolean }) {
       dpr={[1, 1.5]}
       gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       camera={{ position: [0, 0, 7], fov: 35 }}
-      className="cursor-grab active:cursor-grabbing"
+      className={touch ? "touch-pan-y!" : "cursor-grab active:cursor-grabbing"}
     >
       <Kick dep={resolvedTheme} />
       <ambientLight intensity={palette.ambient} />
@@ -108,16 +124,18 @@ export default function RobotCanvas({ active = true }: { active?: boolean }) {
       <RobotControls palette={palette} />
 
       {/* Drag to rotate the robot 360° in place — no pan/zoom, so the page
-          still scrolls over the canvas and the robot stays centered. */}
+          still scrolls over the canvas and the robot stays centered. On touch
+          the polar angle is pinned to the equator: tilt is what would fight the
+          page scroll, and yaw alone still gives the full 360° spin. */}
       <OrbitControls
         makeDefault
         enablePan={false}
         enableZoom={false}
         enableDamping
         dampingFactor={0.08}
-        rotateSpeed={0.6}
-        minPolarAngle={Math.PI * 0.1}
-        maxPolarAngle={Math.PI * 0.9}
+        rotateSpeed={touch ? 0.9 : 0.6}
+        minPolarAngle={touch ? Math.PI / 2 : Math.PI * 0.1}
+        maxPolarAngle={touch ? Math.PI / 2 : Math.PI * 0.9}
       />
 
       <ContactShadows

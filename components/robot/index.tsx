@@ -38,9 +38,10 @@ function supportsWebGL(): boolean {
 type Mode = "pending" | "canvas" | "fallback";
 
 /**
- * Decorative robot mascot. Renders the full 3D scene on capable desktops, and a
- * lightweight animated SVG on small screens, without WebGL, or when the user
- * prefers reduced motion. Size it via `className` on the consumer side.
+ * Decorative robot mascot. Renders the full 3D scene on every capable device
+ * (phones included, so mobile matches desktop), and falls back to a lightweight
+ * animated SVG only without WebGL or when the user prefers reduced motion.
+ * Size it via `className` on the consumer side.
  */
 export function Robot({ className }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,24 +49,18 @@ export function Robot({ className }: { className?: string }) {
   const [inView, setInView] = useState(true);
 
   // Capability detection (client-only) — runs after mount to avoid any
-  // hydration mismatch; re-evaluates if the breakpoint/motion preference flips.
+  // hydration mismatch; re-evaluates if the motion preference flips.
   useEffect(() => {
-    const smallMql = window.matchMedia("(max-width: 767px)");
     const motionMql = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const evaluate = () => {
-      const useFallback =
-        motionMql.matches || smallMql.matches || !supportsWebGL();
+      const useFallback = motionMql.matches || !supportsWebGL();
       setMode(useFallback ? "fallback" : "canvas");
     };
 
     evaluate();
-    smallMql.addEventListener("change", evaluate);
     motionMql.addEventListener("change", evaluate);
-    return () => {
-      smallMql.removeEventListener("change", evaluate);
-      motionMql.removeEventListener("change", evaluate);
-    };
+    return () => motionMql.removeEventListener("change", evaluate);
   }, []);
 
   // Pause the render loop while off-screen.
