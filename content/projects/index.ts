@@ -8,6 +8,7 @@ import { MedygoCaseStudy, medygo } from "./medygo";
 import { SetTimerAppCaseStudy, setTimerApp } from "./set-timer-app";
 import { StockerCaseStudy, stocker } from "./stocker";
 import { WeatherWiseCaseStudy, weatherWise } from "./weather-wise";
+import { ZycartCaseStudy, zycart } from "./zycart";
 
 /**
  * Project registry. Each entry pairs a project's metadata with the React
@@ -20,6 +21,7 @@ export interface ProjectEntry {
 }
 
 export const projectEntries: ProjectEntry[] = [
+  { meta: zycart, Body: ZycartCaseStudy },
   { meta: stocker, Body: StockerCaseStudy },
   { meta: medygo, Body: MedygoCaseStudy },
   { meta: cmsGenerator, Body: CmsGeneratorCaseStudy },
