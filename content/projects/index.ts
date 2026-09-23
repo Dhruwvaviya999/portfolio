@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { Project } from "@/types";
 
+import { CmsGeneratorCaseStudy, cmsGenerator } from "./cms-generator";
 import { ErpSystemCaseStudy, erpSystem } from "./erp-system";
 import { FinancelyCaseStudy, financely } from "./financely";
 import { MedygoCaseStudy, medygo } from "./medygo";
@@ -21,6 +22,7 @@ export interface ProjectEntry {
 export const projectEntries: ProjectEntry[] = [
   { meta: stocker, Body: StockerCaseStudy },
   { meta: medygo, Body: MedygoCaseStudy },
+  { meta: cmsGenerator, Body: CmsGeneratorCaseStudy },
   { meta: financely, Body: FinancelyCaseStudy },
   { meta: setTimerApp, Body: SetTimerAppCaseStudy },
   { meta: weatherWise, Body: WeatherWiseCaseStudy },
