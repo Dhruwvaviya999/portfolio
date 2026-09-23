@@ -8,7 +8,7 @@ export const financely: Project = {
     "A finance tracker for logging income and expenses, watching your balance update in real time, and understanding where the money goes through charts and analytics.",
   year: 2024,
   role: "Full Stack Developer",
-  featured: true,
+  featured: false,
   cover: "/images/projects/financely.png",
   stack: [
     "React",
