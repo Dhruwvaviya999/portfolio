@@ -9,6 +9,13 @@
   --color-foreground: var(--foreground);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
+  --color-term-bg: var(--term-bg);
+  --color-term-prompt: var(--term-prompt);
+  --color-term-green: var(--term-green);
+  --color-term-yellow: var(--term-yellow);
+  --color-term-cyan: var(--term-cyan);
+  --color-term-magenta: var(--term-magenta);
+  --color-term-red: var(--term-red);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
@@ -85,6 +92,16 @@
   --robot-eye: oklch(0.7 0.18 230); /* glowing eye color */
   --robot-rim: oklch(0.62 0.19 256); /* rim / accent light */
 
+  /* Terminal palette (components/terminal). ANSI-style semantic colors tuned
+     to the brand hue; every value clears WCAG AA (>= 4.5:1) on --term-bg. */
+  --term-bg: oklch(0.975 0.004 256);
+  --term-prompt: oklch(0.52 0.19 256); /* brand, darkened for small text */
+  --term-green: oklch(0.52 0.16 150);
+  --term-yellow: oklch(0.55 0.14 80);
+  --term-cyan: oklch(0.52 0.12 215);
+  --term-magenta: oklch(0.52 0.19 320);
+  --term-red: oklch(0.55 0.22 27);
+
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -129,6 +146,15 @@
   --robot-eye: oklch(0.8 0.17 200); /* brighter cyan glow in dark */
   --robot-rim: oklch(0.7 0.16 256);
 
+  /* Terminal palette — brighter, lower-chroma variants for the dark screen. */
+  --term-bg: oklch(0.12 0.006 256);
+  --term-prompt: oklch(0.7 0.16 256); /* = --brand */
+  --term-green: oklch(0.8 0.17 150);
+  --term-yellow: oklch(0.86 0.15 85);
+  --term-cyan: oklch(0.83 0.13 205); /* ≈ robot eye glow */
+  --term-magenta: oklch(0.79 0.16 320);
+  --term-red: oklch(0.704 0.191 22.216); /* = --destructive */
+
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -171,4 +197,36 @@
   html {
     scroll-behavior: smooth;
   }
+}
+
+/* Terminal block caret. Inverts the character under it (bg = prompt color,
+   text = screen color) and hard-blinks; solid when reduced motion is set. */
+@keyframes term-blink {
+  0%,
+  49% {
+    background-color: var(--term-prompt);
+    color: var(--term-bg);
+  }
+  50%,
+  100% {
+    background-color: transparent;
+    color: var(--foreground);
+  }
+}
+.term-caret {
+  background-color: var(--term-prompt);
+  color: var(--term-bg);
+  animation: term-blink 1.1s steps(1) infinite;
+}
+.term-caret-idle {
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--term-prompt) 60%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .term-caret {
+    animation: none;
+  }
+}
+/* Selection inside the terminal uses the cyan channel so it reads as "screen". */
+.term-screen ::selection {
+  background-color: color-mix(in oklch, var(--term-cyan) 30%, transparent);
 }

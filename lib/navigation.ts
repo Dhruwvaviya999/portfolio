@@ -13,6 +13,7 @@ import { siteConfig } from "@/lib/site";
 
 export const mainNav: NavItem[] = [
   { label: "About", href: "/#about" },
+  { label: "Terminal", href: "/#terminal" },
   { label: "Skills", href: "/#skills" },
   { label: "Projects", href: "/#projects" },
   { label: "Experience", href: "/#experience" },

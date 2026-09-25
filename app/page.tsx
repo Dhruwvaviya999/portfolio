@@ -11,6 +11,7 @@ import {
   ProjectsSection,
   SkillsSection,
 } from "@/components/sections";
+import { TerminalSection } from "@/components/terminal";
 
 export const metadata: Metadata = {
   // Absolute title so the home page reads well (bypasses the "%s | name" template).
@@ -26,6 +27,7 @@ export default function Home() {
       <JsonLd data={websiteJsonLd()} />
       <HeroSection />
       <AboutSection />
+      <TerminalSection />
       <SkillsSection />
       <ProjectsSection />
       <ExperienceSection />
