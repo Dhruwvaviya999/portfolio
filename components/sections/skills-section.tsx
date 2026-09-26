@@ -34,7 +34,7 @@ export function SkillsSection() {
       <SectionHeading
         eyebrow="Skills"
         title="Tools I work with"
-        description="A pragmatic stack for building fast, polished, maintainable products. Move your cursor through them."
+        description="A pragmatic stack for building fast, polished, maintainable products. Move your cursor through them, then click to let them go."
       />
 
       {/* Full-bleed breakout: the train plays across the entire viewport
