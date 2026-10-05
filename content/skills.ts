@@ -64,21 +64,21 @@ export const skills: SkillGroup[] = [
         icon: "express",
         description: "A minimal Node.js framework for building REST APIs and web servers.",
       },
-      {
-        name: "MySQL",
-        icon: "mysql",
-        description: "A widely used relational database for structured, query-heavy data.",
-      },
+      // {
+      //   name: "MySQL",
+      //   icon: "mysql",
+      //   description: "A widely used relational database for structured, query-heavy data.",
+      // },
       {
         name: "MongoDB",
         icon: "mongodb",
         description: "A document database that stores flexible, JSON-like records instead of rigid tables.",
       },
-      {
-        name: "Firebase",
-        icon: "firebase",
-        description: "Google's backend platform bundling auth, database, and hosting behind one SDK.",
-      },
+      // {
+      //   name: "Firebase",
+      //   icon: "firebase",
+      //   description: "Google's backend platform bundling auth, database, and hosting behind one SDK.",
+      // },
       {
         name: "PostgreSQL",
         icon: "postgresql",
@@ -139,11 +139,11 @@ export const skills: SkillGroup[] = [
         icon: "vercel",
         description: "A deployment platform purpose-built for shipping Next.js apps to the edge.",
       },
-      {
-        name: "Netlify",
-        icon: "netlify",
-        description: "A hosting platform for deploying frontend sites straight from Git.",
-      },
+      // {
+      //   name: "Netlify",
+      //   icon: "netlify",
+      //   description: "A hosting platform for deploying frontend sites straight from Git.",
+      // },
     ],
   },
 ];
