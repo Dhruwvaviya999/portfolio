@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 import { cn } from "@/lib/utils";
+import { HandControl } from "./HandControl";
+import { createHandState, type HandState } from "./hand-state";
 import { RobotFallback } from "./RobotFallback";
 import { RobotLoader } from "./RobotLoader";
 
@@ -41,12 +43,16 @@ type Mode = "pending" | "canvas" | "fallback";
  * Decorative robot mascot. Renders the full 3D scene on every capable device
  * (phones included, so mobile matches desktop), and falls back to a lightweight
  * animated SVG only without WebGL or when the user prefers reduced motion.
+ * The 3D scene also gets an opt-in webcam hand-control toggle (`HandControl`).
  * Size it via `className` on the consumer side.
  */
 export function Robot({ className }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<Mode>("pending");
   const [inView, setInView] = useState(true);
+  // Shared by the (dynamically loaded) scene and the webcam hook; mutated per
+  // frame, never set as state.
+  const hand = useRef<HandState>(createHandState());
 
   // Capability detection (client-only) — runs after mount to avoid any
   // hydration mismatch; re-evaluates if the motion preference flips.
@@ -76,14 +82,15 @@ export function Robot({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className={cn("relative h-full w-full", className)}
-      aria-hidden="true"
-    >
-      {mode === "pending" && <RobotLoader />}
-      {mode === "fallback" && <RobotFallback />}
-      {mode === "canvas" && <RobotCanvas active={inView} />}
+    <div className={cn("relative h-full w-full", className)}>
+      <div ref={containerRef} className="h-full w-full" aria-hidden="true">
+        {mode === "pending" && <RobotLoader />}
+        {mode === "fallback" && <RobotFallback />}
+        {mode === "canvas" && <RobotCanvas active={inView} hand={hand} />}
+      </div>
+      {/* Outside the aria-hidden box so the toggle stays reachable. Only with
+          the 3D scene — the SVG fallback has nothing to drive. */}
+      {mode === "canvas" && <HandControl hand={hand} />}
     </div>
   );
 }

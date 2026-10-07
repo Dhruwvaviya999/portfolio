@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import { useTheme } from "next-themes";
 
+import type { HandState } from "./hand-state";
 import { RobotControls } from "./RobotControls";
 import { darkPalette, lightPalette } from "./RobotModel";
 
@@ -36,7 +37,14 @@ function Kick({ dep }: { dep: string | undefined }) {
   return null;
 }
 
-export default function RobotCanvas({ active = true }: { active?: boolean }) {
+export default function RobotCanvas({
+  active = true,
+  hand,
+}: {
+  active?: boolean;
+  /** Webcam hand state (see `useHandTracking`); optional, mouse-only without it. */
+  hand?: RefObject<HandState>;
+}) {
   // Touch devices split the gesture: horizontal drag spins the robot, vertical
   // swipe scrolls the page. OrbitControls hard-sets `touch-action: none` inline
   // on the canvas (which would trap scroll inside the robot), so we override it
@@ -121,7 +129,7 @@ export default function RobotCanvas({ active = true }: { active?: boolean }) {
         />
       </Environment>
 
-      <RobotControls palette={palette} />
+      <RobotControls palette={palette} hand={hand} />
 
       {/* Drag to rotate the robot 360° in place — no pan/zoom, so the page
           still scrolls over the canvas and the robot stays centered. On touch
