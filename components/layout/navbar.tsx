@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText } from "lucide-react";
+import { FileText, SquareTerminal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
 import { SECTION_IDS, isNavItemActive, mainNav } from "@/lib/navigation";
 import { useScrolled } from "@/hooks/use-scrolled";
 import { useActiveSection } from "@/hooks/use-active-section";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { openTerminal } from "@/components/terminal/terminal-dialog";
 import { ThemeToggle } from "./theme-toggle";
 import { MobileNav } from "./mobile-nav";
 
@@ -68,6 +69,15 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={openTerminal}
+            aria-label="Open terminal"
+            title="Open terminal (`)"
+          >
+            <SquareTerminal className="size-4" />
+          </Button>
           <ThemeToggle />
           <Link
             href={siteConfig.resumeUrl}

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Footer, Navbar, ScrollProgress } from "@/components/layout";
+import { TerminalLauncher } from "@/components/terminal";
 import { siteConfig } from "@/lib/site";
 
 const fontSans = Geist({
@@ -82,6 +83,7 @@ export default function RootLayout({
             {children}
             <Footer />
           </div>
+          <TerminalLauncher />
         </Providers>
       </body>
     </html>
