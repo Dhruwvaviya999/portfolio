@@ -4,7 +4,7 @@ export const siteConfig = {
   name: "Dhruw Vaviya",
   title: "Software Developer",
   description:
-    "Portfolio of a software engineer building fast, polished web experiences with Next.js, TypeScript, and 3D on the web.",
+    "Portfolio of a software developer building full stack web apps — from clean UIs to reliable backends.",
   url,
   /** Dynamic OG image route is generated in Section 7. */
   ogImage: `${url}/opengraph-image`,
