@@ -66,6 +66,21 @@ async function createRecognizer(vision: VisionFileset, Recognizer: typeof Gestur
   }
 }
 
+// The wasm runtime writes all native logs (even plain "INFO: ..." lines) to
+// console.error, which the Next dev overlay reports as errors. The loader binds
+// console.error once when its script runs, so this must be installed before the
+// fileset loads and stay in place.
+let infoLogsSilenced = false;
+function silenceMediapipeInfoLogs() {
+  if (infoLogsSilenced) return;
+  infoLogsSilenced = true;
+  const original = console.error;
+  console.error = (...args: unknown[]) => {
+    if (typeof args[0] === "string" && args[0].startsWith("INFO: ")) return;
+    original.apply(console, args);
+  };
+}
+
 /** Turn a getUserMedia / MediaPipe failure into something a visitor can act on. */
 function describeError(err: unknown): string {
   const name = err instanceof Error ? err.name : "";
@@ -229,6 +244,7 @@ export function useHandTracking(hand: RefObject<HandState>) {
       if (cancelled()) throw new Error("cancelled");
       setStatus("model");
 
+      silenceMediapipeInfoLogs();
       const { FilesetResolver, GestureRecognizer } = await import("@mediapipe/tasks-vision");
       const vision = await FilesetResolver.forVisionTasks(WASM_URL);
       recognizer = await createRecognizer(vision, GestureRecognizer);
