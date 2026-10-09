@@ -21,7 +21,7 @@ const GESTURE_LABEL: Record<HandGesture, string> = {
 };
 
 const BUTTON_TITLE: Record<HandTrackingStatus, string> = {
-  idle: "Control the robot with your hand (runs on your device — the camera feed never leaves your browser)",
+  idle: "Control the robot with your hand.",
   camera: "Waiting for camera access…",
   model: "Loading hand tracking…",
   active: "Stop hand control",

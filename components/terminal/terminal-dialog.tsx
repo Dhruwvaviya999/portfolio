@@ -1,18 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { XIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { TerminalData } from "@/lib/terminal/types";
 import { Terminal } from "./terminal";
+import { useDragOffset } from "./use-drag-offset";
 
 /** Window event that opens the overlay from anywhere (navbar button, etc.). */
 export const TERMINAL_OPEN_EVENT = "portfolio:terminal:open";
@@ -33,22 +32,43 @@ function isTypingTarget(el: Element | null): boolean {
 }
 
 /**
+ * "minimized" keeps the dialog open but collapses it to its title bar, in
+ * place and non-modal, so the page is usable and the session survives.
+ */
+type View = "closed" | "open" | "minimized";
+
+/**
  * Global terminal overlay. Opens on the backtick key (or Ctrl+`) from anywhere
  * that isn't a text field, or via `openTerminal()`. Mounted once in the root
  * layout by `TerminalLauncher`; shares command history with the section
- * terminal through sessionStorage.
+ * terminal through sessionStorage. The traffic lights close, minimize
+ * (collapse to the title bar) and maximize it; the title bar drags it around.
  */
 export function TerminalDialog({ data }: { data: TerminalData }) {
-  const [open, setOpen] = useState(false);
-  const close = useCallback(() => setOpen(false), []);
+  const [view, setView] = useState<View>("closed");
+  const [maximized, setMaximized] = useState(false);
+  const open = view !== "closed";
+  const minimized = view === "minimized";
+  const drag = useDragOffset();
+
+  const close = useCallback(() => setView("closed"), []);
+  const toggleMinimized = useCallback(
+    () => setView((v) => (v === "minimized" ? "open" : "minimized")),
+    [],
+  );
+  const toggleMaximized = useCallback(() => {
+    setMaximized((m) => !m);
+    setView("open");
+  }, []);
 
   useEffect(() => {
-    const onOpen = () => setOpen(true);
+    const onOpen = () => setView("open");
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "`" || e.metaKey || e.altKey) return;
       if (isTypingTarget(document.activeElement) && !e.ctrlKey) return;
       e.preventDefault();
-      setOpen((o) => !o);
+      // Closed or minimized -> bring it up; open -> close.
+      setView((v) => (v === "open" ? "closed" : "open"));
     };
     window.addEventListener(TERMINAL_OPEN_EVENT, onOpen);
     window.addEventListener("keydown", onKey);
@@ -59,38 +79,76 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
   }, []);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next, details) => {
+        if (next) return setView("open");
+        // While minimized, Escape belongs to the page, not the terminal.
+        if (minimized && details.reason === "escape-key") return;
+        setView("closed");
+      }}
+      // Minimized: no focus trap or scroll lock, and outside clicks don't
+      // dismiss it. The backdrop fades out and lets clicks through.
+      modal={!minimized}
+      disablePointerDismissal={minimized}
+      // Reopen at the normal size and place, but don't move while fading out.
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) {
+          setMaximized(false);
+          drag.reset();
+        }
+      }}
+    >
       <DialogContent
         showCloseButton={false}
-        className="top-[6svh] w-[calc(100%-1.5rem)] max-w-3xl translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 sm:top-[10svh] sm:max-w-3xl data-open:slide-in-from-top-2"
+        overlayClassName={cn(
+          "transition-opacity duration-200",
+          minimized && "pointer-events-none opacity-0",
+        )}
+        className={cn(
+          "translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 data-open:slide-in-from-top-2",
+          // Grows from the same spot as the screen height (see `Terminal`).
+          // max-w-[100vw] rather than none so the width can animate.
+          "transition-[top,width,max-width] duration-200 ease-out motion-reduce:transition-none",
+          // Normal size matches the section terminal (`max-w-4xl` inside the
+          // page's px-4 / sm:px-6 gutters).
+          maximized
+            ? "top-3 w-[calc(100%-1.5rem)] max-w-[100vw] sm:max-w-[100vw]"
+            : "top-[6svh] w-[calc(100%-2rem)] max-w-4xl sm:top-[10svh] sm:w-[calc(100%-3rem)] sm:max-w-4xl",
+        )}
       >
         <DialogTitle className="sr-only">Terminal</DialogTitle>
         <DialogDescription className="sr-only">
           Explore the portfolio with commands. Type help for a list. Press Escape to close.
         </DialogDescription>
 
-        {open ? (
+        {/* Not gated on `open`: the popup stays mounted through its exit
+            animation, and unmounts (ending the session) once it's done.
+            The drag offset lives on this wrapper, not the popup, so it
+            doesn't fight the open/close animation's transform. */}
+        <div
+          ref={drag.targetRef}
+          // Maximized fills the viewport, so the dragged position is parked
+          // until restore (kept, not cleared). The transition is for that
+          // move only; the hook switches it off while dragging.
+          style={maximized ? { transform: "translate(0px, 0px)" } : drag.targetStyle}
+          className="transition-transform duration-200 ease-out motion-reduce:transition-none"
+        >
           <Terminal
             data={data}
             autoFocus
             onClose={close}
-            screenClassName="h-[52svh] sm:h-[56svh]"
-            actions={
-              <>
-                <kbd className="hidden rounded border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
-                  esc
-                </kbd>
-                <DialogClose
-                  render={
-                    <Button variant="ghost" size="icon-xs" aria-label="Close terminal" />
-                  }
-                >
-                  <XIcon />
-                </DialogClose>
-              </>
-            }
+            collapsed={minimized}
+            maximized={maximized}
+            titleBarProps={maximized ? undefined : drag.handleProps}
+            controls={{
+              onClose: close,
+              onMinimize: toggleMinimized,
+              onMaximize: toggleMaximized,
+              maximized,
+            }}
           />
-        ) : null}
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -40,8 +40,10 @@ function saveHistory(history: string[]) {
 
 export interface UseTerminalOptions {
   data: TerminalData;
-  /** Called by `exit` (overlay only). */
+  /** Called by `exit`. */
   onClose?: () => void;
+  /** Called after `goto` scrolls the page; defaults to `onClose`. */
+  onScrollTo?: () => void;
 }
 
 /**
@@ -49,7 +51,7 @@ export interface UseTerminalOptions {
  * per visible terminal (section and overlay each own their own screen but
  * share command history via sessionStorage).
  */
-export function useTerminal({ data, onClose }: UseTerminalOptions) {
+export function useTerminal({ data, onClose, onScrollTo }: UseTerminalOptions) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
@@ -91,14 +93,14 @@ export function useTerminal({ data, onClose }: UseTerminalOptions) {
           behavior: prefersReducedMotion() ? "auto" : "smooth",
           block: "start",
         });
-        onClose?.();
+        (onScrollTo ?? onClose)?.();
       },
       openExternal: (url) => window.open(url, "_blank", "noopener,noreferrer"),
       setTheme,
       theme,
       close: onClose,
     }),
-    [clear, router, pathname, setTheme, theme, onClose],
+    [clear, router, pathname, setTheme, theme, onClose, onScrollTo],
   );
 
   /** Execute a raw line. `echo: false` runs it silently (used for the banner). */

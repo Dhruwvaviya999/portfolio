@@ -417,7 +417,7 @@ const exit: Command = {
   name: "exit",
   aliases: ["quit", "q"],
   hidden: true,
-  description: "Close the terminal overlay.",
+  description: "Close the terminal.",
   run({ actions }) {
     if (actions.close) {
       const close = actions.close;

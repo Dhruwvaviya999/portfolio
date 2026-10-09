@@ -2,7 +2,7 @@ import { getTerminalData } from "@/lib/terminal/data";
 import { Reveal } from "@/components/motion";
 import { Section } from "@/components/shared/section";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { Terminal } from "./terminal";
+import { TerminalPanel } from "./terminal-panel";
 
 /**
  * Terminal — a second way to explore the site. Server component: snapshots
@@ -16,11 +16,11 @@ export function TerminalSection() {
       <SectionHeading
         eyebrow="Terminal"
         title="Prefer the command line?"
-        description="Everything on this page, one command away. Type help to get started — or press ` anywhere to open it."
+        description=""
       />
 
       <Reveal className="mt-12">
-        <Terminal data={data} boot className="mx-auto max-w-4xl" />
+        <TerminalPanel data={data} className="mx-auto max-w-4xl" />
       </Reveal>
     </Section>
   );
