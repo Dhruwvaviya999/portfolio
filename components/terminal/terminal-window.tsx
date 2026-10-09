@@ -54,8 +54,8 @@ export function TerminalWindow({
         {/* Title bar */}
         <div
           className={cn(
-            "flex h-10 items-center gap-3 bg-muted/40 px-3.5",
-            !collapsed && "border-b border-border/70",
+            "flex h-10 items-center gap-3 border-b bg-muted/40 px-3.5 transition-colors duration-200",
+            collapsed ? "border-transparent" : "border-border/70",
           )}
         >
           {controls ? (
@@ -85,7 +85,7 @@ export function TerminalWindow({
               <span className="size-3 rounded-full bg-term-green/80" />
             </div>
           )}
-          {/* While docked, the whole title is a click target to restore. */}
+          {/* While collapsed, the whole title is a click target to restore. */}
           {collapsed && controls ? (
             <button
               type="button"
@@ -106,15 +106,24 @@ export function TerminalWindow({
           </div>
         </div>
 
-        {/* Screen. Inner top highlight gives a hint of glass depth in dark mode. */}
+        {/* Collapsing animates the row from 1fr to 0fr; `inert` keeps the
+            hidden prompt from taking focus or keystrokes meanwhile. */}
         <div
+          inert={collapsed}
           className={cn(
-            "bg-term-bg font-mono text-[13px] leading-relaxed dark:shadow-[inset_0_1px_0_0_rgb(255_255_255/0.04)] sm:text-sm",
-            collapsed && "hidden",
-            bodyClassName,
+            "grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none",
+            collapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]",
           )}
         >
-          {children}
+          {/* Screen. Inner top highlight gives a hint of glass depth in dark mode. */}
+          <div
+            className={cn(
+              "min-h-0 overflow-hidden bg-term-bg font-mono text-[13px] leading-relaxed dark:shadow-[inset_0_1px_0_0_rgb(255_255_255/0.04)] sm:text-sm",
+              bodyClassName,
+            )}
+          >
+            {children}
+          </div>
         </div>
       </div>
     </div>
@@ -142,7 +151,7 @@ function TrafficLight({
       className={cn(
         // `after` widens the hit area beyond the 12px dot.
         "relative grid size-3 cursor-pointer place-items-center rounded-full text-black/60 outline-none after:absolute after:-inset-1 focus-visible:ring-3 focus-visible:ring-ring/50",
-        "[&_svg]:size-2 [&_svg]:stroke-[3] [&_svg]:opacity-0 group-hover/lights:[&_svg]:opacity-100 group-focus-within/lights:[&_svg]:opacity-100",
+        "[&_svg]:size-2 [&_svg]:stroke-3 [&_svg]:opacity-0 group-hover/lights:[&_svg]:opacity-100 group-focus-within/lights:[&_svg]:opacity-100",
         className,
       )}
     >

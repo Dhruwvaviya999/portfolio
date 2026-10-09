@@ -31,8 +31,8 @@ function isTypingTarget(el: Element | null): boolean {
 }
 
 /**
- * "minimized" keeps the dialog open but docks it to the bottom-right corner as
- * a non-modal title bar, so the page is usable and the session survives.
+ * "minimized" keeps the dialog open but collapses it to its title bar, in
+ * place and non-modal, so the page is usable and the session survives.
  */
 type View = "closed" | "open" | "minimized";
 
@@ -40,8 +40,8 @@ type View = "closed" | "open" | "minimized";
  * Global terminal overlay. Opens on the backtick key (or Ctrl+`) from anywhere
  * that isn't a text field, or via `openTerminal()`. Mounted once in the root
  * layout by `TerminalLauncher`; shares command history with the section
- * terminal through sessionStorage. The traffic lights close, minimize (dock)
- * and maximize it.
+ * terminal through sessionStorage. The traffic lights close, minimize
+ * (collapse to the title bar) and maximize it.
  */
 export function TerminalDialog({ data }: { data: TerminalData }) {
   const [view, setView] = useState<View>("closed");
@@ -65,7 +65,7 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
       if (e.key !== "`" || e.metaKey || e.altKey) return;
       if (isTypingTarget(document.activeElement) && !e.ctrlKey) return;
       e.preventDefault();
-      // Closed or docked -> bring it up; open -> close.
+      // Closed or minimized -> bring it up; open -> close.
       setView((v) => (v === "open" ? "closed" : "open"));
     };
     window.addEventListener(TERMINAL_OPEN_EVENT, onOpen);
@@ -81,25 +81,33 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
       open={open}
       onOpenChange={(next, details) => {
         if (next) return setView("open");
-        // While docked, Escape belongs to the page, not the terminal.
+        // While minimized, Escape belongs to the page, not the terminal.
         if (minimized && details.reason === "escape-key") return;
         setView("closed");
       }}
-      // Docked: no backdrop, focus trap, or scroll lock, and outside clicks
-      // don't dismiss it.
+      // Minimized: no focus trap or scroll lock, and outside clicks don't
+      // dismiss it. The backdrop fades out and lets clicks through.
       modal={!minimized}
       disablePointerDismissal={minimized}
+      // Reopen at the normal size, but don't shrink while fading out.
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) setMaximized(false);
+      }}
     >
       <DialogContent
         showCloseButton={false}
-        showOverlay={!minimized}
+        overlayClassName={cn(
+          "transition-opacity duration-200",
+          minimized && "pointer-events-none opacity-0",
+        )}
         className={cn(
-          "gap-0 bg-transparent p-0 shadow-none ring-0",
-          minimized
-            ? "top-auto right-4 bottom-4 left-auto w-72 max-w-[calc(100%-2rem)] translate-x-0 translate-y-0 sm:max-w-[calc(100%-2rem)]"
-            : maximized
-              ? "top-3 w-[calc(100%-1.5rem)] max-w-none translate-y-0 sm:max-w-none data-open:slide-in-from-top-2"
-              : "top-[6svh] w-[calc(100%-1.5rem)] max-w-3xl translate-y-0 sm:top-[10svh] sm:max-w-3xl data-open:slide-in-from-top-2",
+          "w-[calc(100%-1.5rem)] translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 data-open:slide-in-from-top-2",
+          // Grows from the same spot as the screen height (see `Terminal`).
+          // max-w-[100vw] rather than none so the width can animate.
+          "transition-[top,max-width] duration-200 ease-out motion-reduce:transition-none",
+          maximized
+            ? "top-3 max-w-[100vw] sm:max-w-[100vw]"
+            : "top-[6svh] max-w-3xl sm:top-[10svh] sm:max-w-3xl",
         )}
       >
         <DialogTitle className="sr-only">Terminal</DialogTitle>
@@ -113,26 +121,14 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
             autoFocus
             onClose={close}
             collapsed={minimized}
+            maximized={maximized}
             controls={{
               onClose: close,
               onMinimize: toggleMinimized,
               onMaximize: toggleMaximized,
               maximized,
             }}
-            // Maximized: fill the viewport minus the 0.75rem margins, title bar
-            // and quick-command row (which can wrap on phones).
-            screenClassName={
-              maximized
-                ? "h-[calc(100svh-8rem)] sm:h-[calc(100svh-6.5rem)]"
-                : "h-[52svh] sm:h-[56svh]"
-            }
-            actions={
-              minimized ? null : (
-                <kbd className="hidden rounded border border-border bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
-                  esc
-                </kbd>
-              )
-            }
+            screenClassName="h-[52svh] sm:h-[56svh]"
           />
         ) : null}
       </DialogContent>
