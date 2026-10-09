@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 import { cn } from "@/lib/utils";
+import { HandPreview } from "./HandControl";
+import { useRobotBinding, type RobotMode } from "./hand-control-context";
 import { RobotFallback } from "./RobotFallback";
 import { RobotLoader } from "./RobotLoader";
 
@@ -35,18 +37,21 @@ function supportsWebGL(): boolean {
   }
 }
 
-type Mode = "pending" | "canvas" | "fallback";
-
 /**
  * Decorative robot mascot. Renders the full 3D scene on every capable device
  * (phones included, so mobile matches desktop), and falls back to a lightweight
  * animated SVG only without WebGL or when the user prefers reduced motion.
+ * The 3D scene can also be driven by webcam hand tracking: the toggle lives in
+ * the navbar, the camera preview here (`hand-control-context`).
  * Size it via `className` on the consumer side.
  */
 export function Robot({ className }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mode, setMode] = useState<Mode>("pending");
+  const [mode, setMode] = useState<RobotMode>("pending");
   const [inView, setInView] = useState(true);
+  // `hand` is shared by the (dynamically loaded) scene and the webcam hook;
+  // mutated per frame, never set as state.
+  const { hand, robotRef, setRobotMode } = useRobotBinding();
 
   // Capability detection (client-only) — runs after mount to avoid any
   // hydration mismatch; re-evaluates if the motion preference flips.
@@ -63,6 +68,12 @@ export function Robot({ className }: { className?: string }) {
     return () => motionMql.removeEventListener("change", evaluate);
   }, []);
 
+  // Tell the navbar toggle whether there's a 3D robot to drive.
+  useEffect(() => {
+    setRobotMode(mode);
+    return () => setRobotMode("pending");
+  }, [mode, setRobotMode]);
+
   // Pause the render loop while off-screen.
   useEffect(() => {
     const el = containerRef.current;
@@ -76,14 +87,15 @@ export function Robot({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className={cn("relative h-full w-full", className)}
-      aria-hidden="true"
-    >
-      {mode === "pending" && <RobotLoader />}
-      {mode === "fallback" && <RobotFallback />}
-      {mode === "canvas" && <RobotCanvas active={inView} />}
+    <div ref={robotRef} className={cn("relative h-full w-full scroll-mt-20", className)}>
+      <div ref={containerRef} className="h-full w-full" aria-hidden="true">
+        {mode === "pending" && <RobotLoader />}
+        {mode === "fallback" && <RobotFallback />}
+        {mode === "canvas" && <RobotCanvas active={inView} hand={hand} />}
+      </div>
+      {/* Outside the aria-hidden box so the preview stays reachable. Only with
+          the 3D scene — the SVG fallback has nothing to drive. */}
+      {mode === "canvas" && <HandPreview />}
     </div>
   );
 }
