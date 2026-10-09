@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Download } from "lucide-react";
+import { ArrowRight, ChevronDown, FileText } from "lucide-react";
 
 import { profile } from "@/content/profile";
 import { socialLinks } from "@/lib/navigation";
@@ -22,7 +22,10 @@ export function HeroSection() {
       className="relative flex min-h-[calc(100svh-3.5rem)] items-center overflow-hidden"
     >
       {/* Subtle, theme-aware background effects */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+      >
         <div className="absolute -left-24 -top-24 size-[28rem] rounded-full bg-brand/20 blur-3xl" />
         <div className="absolute -right-24 top-1/3 size-[24rem] rounded-full bg-brand/10 blur-3xl" />
       </div>
@@ -57,18 +60,18 @@ export function HeroSection() {
 
           <SlideUp delay={0.32}>
             <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-              <a href="#projects" className={buttonVariants({ size: "lg" })}>
-                View Projects
-                <ArrowRight className="size-4" />
-              </a>
               <a
                 href={siteConfig.resumeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={buttonVariants({ size: "lg", variant: "outline" })}
               >
-                <Download className="size-4" />
-                Download Resume
+                <FileText className="size-4" />
+                View Resume
+              </a>
+              <a href="#projects" className={buttonVariants({ size: "lg" })}>
+                See Work
+                <ArrowRight className="size-4" />
               </a>
             </div>
           </SlideUp>

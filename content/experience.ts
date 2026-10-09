@@ -15,10 +15,11 @@ export const experience: Experience[] = [
     summary:
       "Building and maintaining full-stack applications that support internal business operations, with a focus on scalable architecture, efficient workflows, and maintainable UI.",
     highlights: [
-      "Developed and maintained production-ready features using Next.js, React, Node.js, Express.js, Django, MongoDB, and Tailwind CSS.",
-      "Built business dashboards, data management interfaces, dynamic forms, and workflow-driven features used by internal teams.",
-      "Designed reusable components, API integrations, and backend services to improve development efficiency and application maintainability.",
-      "Worked across the frontend, backend, and database layers to debug issues, implement new requirements, and improve existing application workflows.",
+      "Develop and maintain the company's ERP system, primarily contributing to the Sales & Marketing module across the end-to-end Lead-to-PO business workflow.",
+      "Build production features using React.js, Django & PostgreSQL, including 4+ business dashboards, dynamic forms, and workflow-driven screens used by internal teams.",
+      "Built a Daily Sales Activity Form & Dashboard used by 9+ sales team members to track performance and improve visibility into sales activities.",
+      "Design reusable components, API integrations, and backend services; independently handle debugging, testing, and database-related tasks.",
+      "Contribute to 30+ features and enhancements, collaborating with business stakeholders to translate requirements intoproduction-ready software.",
     ],
     url: "https://www.shubhamtanks.com",
   },
@@ -30,10 +31,8 @@ export const experience: Experience[] = [
     summary:
       "Started as a Full Stack Developer Intern, working on practical web applications while building strong foundations across frontend, backend, APIs, and databases.",
     highlights: [
-      "Developed full-stack web applications using the MERN stack, implementing responsive interfaces, REST APIs, authentication, and CRUD operations.",
-      "Built admin panels, data-driven dashboards, and reusable React components for different business and project requirements.",
-      "Worked with MongoDB and Express.js to design database operations and develop backend APIs for frontend applications.",
-      "Integrated third-party APIs and implemented form validation, error handling, and application-level business logic.",
+      "Built 3+ internal web applications from scratch with React, Tailwind CSS, Node.js & MongoDB, including admin panels and dashboards.",
+      "Automated routine workflows across email, Google Sheets, and other manual processes, reducing repetitive work and improving data handling for business teams.",
     ],
     url: "https://www.shubhamtanks.com",
   },
