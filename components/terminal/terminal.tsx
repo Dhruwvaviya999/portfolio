@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { useTerminal } from "@/hooks/use-terminal";
@@ -9,14 +9,8 @@ import { TerminalWindow, type WindowControls } from "./terminal-window";
 import { TerminalOutput } from "./terminal-output";
 import { TerminalInput } from "./terminal-input";
 
-/** One-tap commands under the prompt — discoverability for touch users. */
-const QUICK_COMMANDS = ["help", "projects", "skills", "contact", "neofetch"];
-
-/**
- * Screen height when maximized: the viewport minus the 0.75rem margins, title
- * bar and quick-command row (which can wrap on phones).
- */
-const MAXIMIZED_SCREEN = "h-[calc(100svh-8rem)] sm:h-[calc(100svh-6.5rem)]";
+/** Screen height when maximized: the viewport minus the 0.75rem margins and title bar. */
+const MAXIMIZED_SCREEN = "h-[calc(100svh-4rem)]";
 
 interface TerminalProps {
   data: TerminalData;
@@ -36,14 +30,16 @@ interface TerminalProps {
   collapsed?: boolean;
   /** Grow the screen to fill the viewport (the container handles width). */
   maximized?: boolean;
+  /** Extra props for the title bar (overlay: drag handle). */
+  titleBarProps?: ComponentProps<"div">;
   className?: string;
   /** Height of the scrollable screen. */
   screenClassName?: string;
 }
 
 /**
- * A complete terminal: window chrome, scrollback, prompt, and quick-command
- * chips. Renders on the client; receives all content as serializable props.
+ * A complete terminal: window chrome, scrollback and prompt. Renders on the
+ * client; receives all content as serializable props.
  */
 export function Terminal({
   data,
@@ -55,6 +51,7 @@ export function Terminal({
   controls,
   collapsed = false,
   maximized = false,
+  titleBarProps,
   className,
   screenClassName,
 }: TerminalProps) {
@@ -67,8 +64,12 @@ export function Terminal({
   const { run, typeCommand } = term;
   const first = data.profile.name.split(" ")[0].toLowerCase();
 
-  // Banner on mount (silent — no echoed input line).
+  // Banner on mount (silent — no echoed input line). The ref guard keeps
+  // Strict Mode's double effect run in dev from printing it twice.
+  const bannered = useRef(false);
   useEffect(() => {
+    if (bannered.current) return;
+    bannered.current = true;
     void run("banner", { echo: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -120,6 +121,7 @@ export function Terminal({
         actions={actions}
         controls={controls}
         collapsed={collapsed}
+        titleBarProps={titleBarProps}
       >
         <div
           ref={screenRef}
@@ -139,23 +141,6 @@ export function Terminal({
             onKeyDown={term.onKeyDown}
             onFocus={term.interrupt}
           />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 border-t border-border/70 bg-muted/30 px-3 py-2">
-          {QUICK_COMMANDS.map((cmd) => (
-            <button
-              key={cmd}
-              type="button"
-              onClick={() => {
-                term.interrupt();
-                void run(cmd);
-                inputRef.current?.focus({ preventScroll: true });
-              }}
-              className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 font-mono text-xs text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground"
-            >
-              {cmd}
-            </button>
-          ))}
         </div>
       </TerminalWindow>
     </div>

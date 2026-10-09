@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import type { TerminalData } from "@/lib/terminal/types";
 import { Terminal } from "./terminal";
+import { useDragOffset } from "./use-drag-offset";
 
 /** Window event that opens the overlay from anywhere (navbar button, etc.). */
 export const TERMINAL_OPEN_EVENT = "portfolio:terminal:open";
@@ -41,13 +42,14 @@ type View = "closed" | "open" | "minimized";
  * that isn't a text field, or via `openTerminal()`. Mounted once in the root
  * layout by `TerminalLauncher`; shares command history with the section
  * terminal through sessionStorage. The traffic lights close, minimize
- * (collapse to the title bar) and maximize it.
+ * (collapse to the title bar) and maximize it; the title bar drags it around.
  */
 export function TerminalDialog({ data }: { data: TerminalData }) {
   const [view, setView] = useState<View>("closed");
   const [maximized, setMaximized] = useState(false);
   const open = view !== "closed";
   const minimized = view === "minimized";
+  const drag = useDragOffset();
 
   const close = useCallback(() => setView("closed"), []);
   const toggleMinimized = useCallback(
@@ -89,9 +91,12 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
       // dismiss it. The backdrop fades out and lets clicks through.
       modal={!minimized}
       disablePointerDismissal={minimized}
-      // Reopen at the normal size, but don't shrink while fading out.
+      // Reopen at the normal size and place, but don't move while fading out.
       onOpenChangeComplete={(isOpen) => {
-        if (!isOpen) setMaximized(false);
+        if (!isOpen) {
+          setMaximized(false);
+          drag.reset();
+        }
       }}
     >
       <DialogContent
@@ -101,13 +106,15 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
           minimized && "pointer-events-none opacity-0",
         )}
         className={cn(
-          "w-[calc(100%-1.5rem)] translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 data-open:slide-in-from-top-2",
+          "translate-y-0 gap-0 bg-transparent p-0 shadow-none ring-0 data-open:slide-in-from-top-2",
           // Grows from the same spot as the screen height (see `Terminal`).
           // max-w-[100vw] rather than none so the width can animate.
-          "transition-[top,max-width] duration-200 ease-out motion-reduce:transition-none",
+          "transition-[top,width,max-width] duration-200 ease-out motion-reduce:transition-none",
+          // Normal size matches the section terminal (`max-w-4xl` inside the
+          // page's px-4 / sm:px-6 gutters).
           maximized
-            ? "top-3 max-w-[100vw] sm:max-w-[100vw]"
-            : "top-[6svh] max-w-3xl sm:top-[10svh] sm:max-w-3xl",
+            ? "top-3 w-[calc(100%-1.5rem)] max-w-[100vw] sm:max-w-[100vw]"
+            : "top-[6svh] w-[calc(100%-2rem)] max-w-4xl sm:top-[10svh] sm:w-[calc(100%-3rem)] sm:max-w-4xl",
         )}
       >
         <DialogTitle className="sr-only">Terminal</DialogTitle>
@@ -115,22 +122,33 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
           Explore the portfolio with commands. Type help for a list. Press Escape to close.
         </DialogDescription>
 
-        {open ? (
+        {/* Not gated on `open`: the popup stays mounted through its exit
+            animation, and unmounts (ending the session) once it's done.
+            The drag offset lives on this wrapper, not the popup, so it
+            doesn't fight the open/close animation's transform. */}
+        <div
+          ref={drag.targetRef}
+          // Maximized fills the viewport, so the dragged position is parked
+          // until restore (kept, not cleared). The transition is for that
+          // move only; the hook switches it off while dragging.
+          style={maximized ? { transform: "translate(0px, 0px)" } : drag.targetStyle}
+          className="transition-transform duration-200 ease-out motion-reduce:transition-none"
+        >
           <Terminal
             data={data}
             autoFocus
             onClose={close}
             collapsed={minimized}
             maximized={maximized}
+            titleBarProps={maximized ? undefined : drag.handleProps}
             controls={{
               onClose: close,
               onMinimize: toggleMinimized,
               onMaximize: toggleMaximized,
               maximized,
             }}
-            screenClassName="h-[52svh] sm:h-[56svh]"
           />
-        ) : null}
+        </div>
       </DialogContent>
     </Dialog>
   );

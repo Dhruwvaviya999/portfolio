@@ -28,7 +28,8 @@ type View = "closed" | "open" | "minimized";
  * maximize. Maximizing lifts the window out of the flow with `position: fixed`
  * and animates top/left/width from its spot on the page to the viewport edges;
  * the empty slot keeps its height so the page doesn't jump. Escape or a click
- * on the backdrop brings it back.
+ * on the backdrop brings it back. Closing fades the window out, then leaves a
+ * placeholder of the same height with a reopen button.
  */
 export function TerminalPanel({
   data,
@@ -38,10 +39,13 @@ export function TerminalPanel({
   className?: string;
 }) {
   const [view, setView] = useState<View>("open");
+  const [closing, setClosing] = useState(false);
   const [maximized, setMaximized] = useState(false);
   /** Fixed-position box while maximized or animating back; null = in the flow. */
   const [frame, setFrame] = useState<CSSProperties | null>(null);
   const [slotHeight, setSlotHeight] = useState<number | null>(null);
+  /** Height the window had when closed; the placeholder keeps it. */
+  const [closedHeight, setClosedHeight] = useState<number | null>(null);
   /** Bumped on reopen so the terminal remounts with a fresh session. */
   const [session, setSession] = useState(0);
   const slotRef = useRef<HTMLDivElement>(null);
@@ -49,7 +53,7 @@ export function TerminalPanel({
 
   const minimized = view === "minimized";
   // Like the overlay: backdrop and scroll lock only while maximized and expanded.
-  const modal = maximized && !minimized;
+  const modal = maximized && !minimized && !closing;
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
@@ -95,10 +99,18 @@ export function TerminalPanel({
     });
   }, []);
 
+  // Fade out where it is (even maximized), then swap in the placeholder.
   const close = useCallback(() => {
-    settle();
-    setView("closed");
-  }, [settle]);
+    if (closing) return;
+    window.clearTimeout(timer.current);
+    setClosedHeight(slotRef.current?.getBoundingClientRect().height ?? null);
+    setClosing(true);
+    timer.current = window.setTimeout(() => {
+      setClosing(false);
+      settle();
+      setView("closed");
+    }, RESIZE_MS);
+  }, [closing, settle]);
 
   const reopen = () => {
     setSession((s) => s + 1);
@@ -135,8 +147,11 @@ export function TerminalPanel({
 
   if (view === "closed") {
     return (
-      <div className={className}>
-        <div className="flex h-48 animate-in flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card/40 duration-200 fade-in-0">
+      <div
+        className={cn("min-h-48", className)}
+        style={closedHeight == null ? undefined : { height: closedHeight }}
+      >
+        <div className="flex h-full animate-in flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card/40 duration-200 fade-in-0">
           <p className="font-mono text-xs text-muted-foreground">[Process completed]</p>
           <Button variant="outline" size="sm" onClick={reopen}>
             <SquareTerminal />
@@ -164,16 +179,18 @@ export function TerminalPanel({
         />
       ) : null}
 
+      {/* Keyed so each reopen remounts and replays the enter animation. */}
       <div
+        key={session}
         style={frame ?? undefined}
         className={cn(
-          "transition-[top,left,width] duration-200 ease-out motion-reduce:transition-none",
+          "transition-[top,left,width,opacity,scale] duration-200 ease-out motion-reduce:transition-none",
           frame && "fixed z-50",
           session > 0 && "animate-in fade-in-0 zoom-in-95",
+          closing && "scale-95 opacity-0",
         )}
       >
         <Terminal
-          key={session}
           data={data}
           boot={session === 0}
           autoFocus={session > 0}

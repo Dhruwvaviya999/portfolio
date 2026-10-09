@@ -16,7 +16,7 @@ export function TerminalSection() {
       <SectionHeading
         eyebrow="Terminal"
         title="Prefer the command line?"
-        description="Everything on this page, one command away. Type help to get started — or press ` anywhere to open it."
+        description=""
       />
 
       <Reveal className="mt-12">

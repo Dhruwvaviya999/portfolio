@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { Maximize2, Minimize2, Minus, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -19,13 +19,15 @@ export interface WindowControls {
  * mono title, and an optional right-hand slot for actions. The dots are
  * decorative unless `controls` is passed (the overlay), in which case they
  * close / minimize / maximize. `collapsed` hides everything below the title
- * bar without unmounting it, so the scrollback survives.
+ * bar without unmounting it, so the scrollback survives. `titleBarProps` lets
+ * the overlay make the title bar a drag handle.
  */
 export function TerminalWindow({
   title,
   actions,
   controls,
   collapsed = false,
+  titleBarProps,
   glow = true,
   className,
   bodyClassName,
@@ -35,6 +37,7 @@ export function TerminalWindow({
   actions?: ReactNode;
   controls?: WindowControls;
   collapsed?: boolean;
+  titleBarProps?: ComponentProps<"div">;
   /** Soft brand glow behind the window (matches the hero blur accents). */
   glow?: boolean;
   className?: string;
@@ -53,13 +56,15 @@ export function TerminalWindow({
       <div className="term-screen overflow-hidden rounded-xl bg-card text-card-foreground shadow-xl shadow-black/5 ring-1 ring-foreground/10 dark:shadow-black/40">
         {/* Title bar */}
         <div
+          {...titleBarProps}
           className={cn(
             "flex h-10 items-center gap-3 border-b bg-muted/40 px-3.5 transition-colors duration-200",
             collapsed ? "border-transparent" : "border-border/70",
+            titleBarProps?.className,
           )}
         >
           {controls ? (
-            <div className="group/lights flex items-center gap-2">
+            <div className="group/lights flex items-center gap-2" data-no-drag>
               <TrafficLight label="Close terminal" className="bg-term-red/80" onClick={controls.onClose}>
                 <X />
               </TrafficLight>
