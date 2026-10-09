@@ -5,7 +5,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useTerminal } from "@/hooks/use-terminal";
 import type { TerminalData } from "@/lib/terminal/types";
-import { TerminalWindow } from "./terminal-window";
+import { TerminalWindow, type WindowControls } from "./terminal-window";
 import { TerminalOutput } from "./terminal-output";
 import { TerminalInput } from "./terminal-input";
 
@@ -22,6 +22,10 @@ interface TerminalProps {
   onClose?: () => void;
   /** Extra controls for the title bar's right slot. */
   actions?: ReactNode;
+  /** Makes the traffic lights live (overlay only). */
+  controls?: WindowControls;
+  /** Show only the title bar; the session stays mounted. */
+  collapsed?: boolean;
   className?: string;
   /** Height of the scrollable screen. */
   screenClassName?: string;
@@ -37,6 +41,8 @@ export function Terminal({
   autoFocus = false,
   onClose,
   actions,
+  controls,
+  collapsed = false,
   className,
   screenClassName,
 }: TerminalProps) {
@@ -52,9 +58,13 @@ export function Terminal({
   // Banner on mount (silent — no echoed input line).
   useEffect(() => {
     void run("banner", { echo: false });
-    if (autoFocus) inputRef.current?.focus({ preventScroll: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Focus the prompt on mount and again whenever the window is restored.
+  useEffect(() => {
+    if (autoFocus && !collapsed) inputRef.current?.focus({ preventScroll: true });
+  }, [autoFocus, collapsed]);
 
   // Boot demo: once the screen is mostly in view, type `whoami` for the visitor.
   useEffect(() => {
@@ -74,11 +84,11 @@ export function Terminal({
     return () => observer.disconnect();
   }, [boot, typeCommand]);
 
-  // Keep the latest output in view.
+  // Keep the latest output in view (also after restoring from collapsed).
   useEffect(() => {
     const el = screenRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [term.lines, term.input]);
+  }, [term.lines, term.input, collapsed]);
 
   const focusInput = () => {
     // Don't steal focus while the user is selecting text to copy.
@@ -88,7 +98,12 @@ export function Terminal({
 
   return (
     <div ref={rootRef} className={className}>
-      <TerminalWindow title={`${first}@portfolio: ~`} actions={actions}>
+      <TerminalWindow
+        title={`${first}@portfolio: ~`}
+        actions={actions}
+        controls={controls}
+        collapsed={collapsed}
+      >
         <div
           ref={screenRef}
           onClick={focusInput}
