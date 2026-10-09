@@ -11,6 +11,7 @@ import { useScrolled } from "@/hooks/use-scrolled";
 import { useActiveSection } from "@/hooks/use-active-section";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { openTerminal } from "@/components/terminal/terminal-dialog";
+import { HandControlButton } from "@/components/robot/HandControl";
 import { ThemeToggle } from "./theme-toggle";
 import { MobileNav } from "./mobile-nav";
 
@@ -69,6 +70,9 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-1.5">
+          {/* The robot it drives only lives on the home page. Decided from the
+              path so the server render matches and the header doesn't shift. */}
+          {pathname === "/" && <HandControlButton />}
           <Button
             variant="ghost"
             size="icon"

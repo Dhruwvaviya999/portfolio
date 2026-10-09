@@ -3,6 +3,7 @@
 import * as React from "react";
 import { LazyMotion, MotionConfig, domMax } from "framer-motion";
 import { ThemeProvider } from "@/components/theme-provider";
+import { HandControlProvider } from "@/components/robot/hand-control-context";
 
 /**
  * Root client providers, mounted once in the app layout.
@@ -16,6 +17,8 @@ import { ThemeProvider } from "@/components/theme-provider";
  *   (using `motion.*` throws). `domMax` rather than `domAnimation` because the
  *   skill tiles use shared-element `layoutId` transitions, which need layout
  *   projection — a feature `domAnimation` does not bundle.
+ * - HandControlProvider: the webcam hand-tracking session, shared by the
+ *   navbar toggle and the robot in the hero. Loads nothing until switched on.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -27,7 +30,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <MotionConfig reducedMotion="user">
         <LazyMotion features={domMax} strict>
-          {children}
+          <HandControlProvider>{children}</HandControlProvider>
         </LazyMotion>
       </MotionConfig>
     </ThemeProvider>

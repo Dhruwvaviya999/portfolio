@@ -1,12 +1,13 @@
 "use client";
 
-import type { RefObject } from "react";
-import { CameraOff, Hand, LoaderCircle } from "lucide-react";
+import { useEffect } from "react";
+import { Hand, LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import type { HandGesture, HandState } from "./hand-state";
-import { useHandTracking, type HandTrackingStatus } from "./use-hand-tracking";
+import type { HandGesture } from "./hand-state";
+import { useHandControl } from "./hand-control-context";
+import type { HandTrackingStatus } from "./use-hand-tracking";
 
 const GESTURE_LABEL: Record<HandGesture, string> = {
   none: "👋 ✊ 👍 ✌️",
@@ -19,21 +20,64 @@ const GESTURE_LABEL: Record<HandGesture, string> = {
   love: "🤟 hi!",
 };
 
-const BUTTON_LABEL: Record<HandTrackingStatus, string> = {
-  idle: "Control with your hand",
-  camera: "Allow camera…",
-  model: "Loading model…",
-  active: "Stop camera",
+const BUTTON_TITLE: Record<HandTrackingStatus, string> = {
+  idle: "Control the robot with your hand (runs on your device — the camera feed never leaves your browser)",
+  camera: "Waiting for camera access…",
+  model: "Loading hand tracking…",
+  active: "Stop hand control",
 };
 
 /**
- * Opt-in webcam control for the robot: a toggle button (bottom-right) and,
- * while active, a small mirrored preview (top-right) of what the recognizer
- * sees plus the gesture it currently reads. Rendered outside the robot's
- * `aria-hidden` box so the button stays reachable for assistive tech.
+ * Navbar toggle for webcam hand control, icon-only next to the terminal
+ * button. The navbar only renders it on the page that has the robot; it hides
+ * itself if the camera can't be used or the robot fell back to the static SVG
+ * (nothing to drive).
  */
-export function HandControl({ hand }: { hand: RefObject<HandState> }) {
-  const { status, error, supported, gesture, tracking, videoRef, toggle } = useHandTracking(hand);
+export function HandControlButton() {
+  const { status, supported, toggle, robotMode, robotRef } = useHandControl();
+
+  if (supported === false || robotMode === "fallback") return null;
+
+  const active = status === "active";
+  const loading = status === "camera" || status === "model";
+
+  const onClick = () => {
+    // The scene isn't mounted yet (first frame after hydration).
+    if (robotMode !== "canvas") return;
+    // The navbar stays put while the hero scrolls away; bring the robot and
+    // its camera preview back into view when switching on.
+    if (status === "idle") robotRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    toggle();
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={onClick}
+      disabled={loading}
+      aria-label="Control the robot with your hand"
+      aria-pressed={active}
+      aria-busy={loading}
+      title={BUTTON_TITLE[status]}
+      className="aria-pressed:bg-muted aria-pressed:text-brand"
+    >
+      {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Hand className="size-4" />}
+    </Button>
+  );
+}
+
+/**
+ * The robot-side half of hand control: while active, a small mirrored preview
+ * (top-right) of what the recognizer sees plus the gesture it currently reads;
+ * errors bottom-right. Rendered outside the robot's `aria-hidden` box so the
+ * preview and errors stay reachable for assistive tech.
+ */
+export function HandPreview() {
+  const { status, error, supported, gesture, tracking, videoRef, stop } = useHandControl();
+
+  // Release the camera when the robot (and this <video>) goes away.
+  useEffect(() => stop, [stop]);
 
   // Unknown until mounted (never rendered on the server).
   if (supported === null) return null;
@@ -48,8 +92,6 @@ export function HandControl({ hand }: { hand: RefObject<HandState> }) {
   }
 
   const active = status === "active";
-  const loading = status === "camera" || status === "model";
-  const label = BUTTON_LABEL[status];
 
   return (
     <>
@@ -86,33 +128,14 @@ export function HandControl({ hand }: { hand: RefObject<HandState> }) {
         </span>
       </div>
 
-      {/* Toggle, bottom-right. Icon-only on phones, where the square is small. */}
-      <div className="absolute right-0 bottom-0 flex max-w-[70%] flex-col items-end gap-1.5">
-        {error && (
-          <p role="alert" className="text-right text-xs text-destructive">
-            {error}
-          </p>
-        )}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={toggle}
-          disabled={loading}
-          aria-label={label}
-          title="Runs on your device — the camera feed never leaves your browser"
-          className="max-sm:size-8 max-sm:px-0"
+      {error && (
+        <p
+          role="alert"
+          className="absolute right-0 bottom-0 max-w-[70%] text-right text-xs text-destructive"
         >
-          {loading ? (
-            <LoaderCircle className="animate-spin" />
-          ) : active ? (
-            <CameraOff />
-          ) : (
-            <Hand />
-          )}
-          <span className="max-sm:hidden">{label}</span>
-        </Button>
-      </div>
+          {error}
+        </p>
+      )}
     </>
   );
 }
