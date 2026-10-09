@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, SquareTerminal } from "lucide-react";
+import { SquareTerminal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
 import { SECTION_IDS, isNavItemActive, mainNav } from "@/lib/navigation";
 import { useScrolled } from "@/hooks/use-scrolled";
 import { useActiveSection } from "@/hooks/use-active-section";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { openTerminal } from "@/components/terminal/terminal-dialog";
 import { HandControlButton } from "@/components/robot/HandControl";
 import { ThemeToggle } from "./theme-toggle";
@@ -83,18 +83,6 @@ export function Navbar() {
             <SquareTerminal className="size-4" />
           </Button>
           <ThemeToggle />
-          <Link
-            href={siteConfig.resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              buttonVariants({ size: "sm" }),
-              "hidden md:inline-flex",
-            )}
-          >
-            <FileText className="size-4" />
-            Resume
-          </Link>
           <MobileNav pathname={pathname} activeSection={activeSection} />
         </div>
       </div>

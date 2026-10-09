@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Hand, LoaderCircle } from "lucide-react";
+import { Camera, LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ export function HandControlButton() {
       title={BUTTON_TITLE[status]}
       className="aria-pressed:bg-muted aria-pressed:text-brand"
     >
-      {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Hand className="size-4" />}
+      {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
     </Button>
   );
 }
