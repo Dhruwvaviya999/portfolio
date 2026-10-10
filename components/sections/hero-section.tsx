@@ -71,7 +71,7 @@ export function HeroSection() {
               </a>
               <a href="#projects" className={buttonVariants({ size: "lg" })}>
                 See Work
-                <ArrowRight className="size-4" />
+                <ArrowRight data-icon="inline-end" className="size-4" />
               </a>
             </div>
           </SlideUp>

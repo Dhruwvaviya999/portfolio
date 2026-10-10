@@ -49,7 +49,7 @@ export function ProjectsSection() {
           className={buttonVariants({ variant: "outline", size: "lg" })}
         >
           View All Projects
-          <ArrowRight className="size-4" />
+          <ArrowRight data-icon="inline-end" className="size-4" />
         </Link>
       </Reveal>
     </Section>
