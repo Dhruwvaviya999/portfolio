@@ -28,8 +28,9 @@ type View = "closed" | "open" | "minimized";
  * maximize. Maximizing lifts the window out of the flow with `position: fixed`
  * and animates top/left/width from its spot on the page to the viewport edges;
  * the empty slot keeps its height so the page doesn't jump. Escape or a click
- * on the backdrop brings it back. Closing fades the window out, then leaves a
- * placeholder of the same height with a reopen button.
+ * on the backdrop brings it back. Closing folds the body up like minimize,
+ * fades the title bar out, then leaves a placeholder of the same height with a
+ * reopen button.
  */
 export function TerminalPanel({
   data,
@@ -39,7 +40,8 @@ export function TerminalPanel({
   className?: string;
 }) {
   const [view, setView] = useState<View>("open");
-  const [closing, setClosing] = useState(false);
+  /** Close in two steps: fold the body up, then fade the title bar. */
+  const [closing, setClosing] = useState<"fold" | "fade" | null>(null);
   const [maximized, setMaximized] = useState(false);
   /** Fixed-position box while maximized or animating back; null = in the flow. */
   const [frame, setFrame] = useState<CSSProperties | null>(null);
@@ -99,18 +101,26 @@ export function TerminalPanel({
     });
   }, []);
 
-  // Fade out where it is (even maximized), then swap in the placeholder.
+  // Fold up and fade out where it is (even maximized), then swap in the
+  // placeholder. The slot holds its height meanwhile so the page stays put.
   const close = useCallback(() => {
     if (closing) return;
     window.clearTimeout(timer.current);
     setClosedHeight(slotRef.current?.getBoundingClientRect().height ?? null);
-    setClosing(true);
-    timer.current = window.setTimeout(() => {
-      setClosing(false);
-      settle();
-      setView("closed");
-    }, RESIZE_MS);
-  }, [closing, settle]);
+    setClosing("fold");
+    timer.current = window.setTimeout(
+      () => {
+        setClosing("fade");
+        timer.current = window.setTimeout(() => {
+          setClosing(null);
+          settle();
+          setView("closed");
+        }, RESIZE_MS);
+      },
+      // Already folded when minimized: straight to the fade.
+      minimized ? 0 : RESIZE_MS,
+    );
+  }, [closing, minimized, settle]);
 
   const reopen = () => {
     setSession((s) => s + 1);
@@ -166,7 +176,7 @@ export function TerminalPanel({
     <div
       ref={slotRef}
       className={className}
-      style={slotHeight == null ? undefined : { height: slotHeight }}
+      style={{ height: slotHeight ?? (closing ? closedHeight : null) ?? undefined }}
     >
       {frame ? (
         <div
@@ -187,7 +197,7 @@ export function TerminalPanel({
           "transition-[top,left,width,opacity,scale] duration-200 ease-out motion-reduce:transition-none",
           frame && "fixed z-50",
           session > 0 && "animate-in fade-in-0 zoom-in-95",
-          closing && "scale-95 opacity-0",
+          closing === "fade" && "scale-95 opacity-0",
         )}
       >
         <Terminal
@@ -196,7 +206,7 @@ export function TerminalPanel({
           autoFocus={session > 0}
           onClose={close}
           onScrollTo={settle}
-          collapsed={minimized}
+          collapsed={minimized || closing !== null}
           maximized={maximized}
           controls={{
             onClose: close,
