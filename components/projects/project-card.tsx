@@ -82,7 +82,7 @@ export function ProjectCard({ project }: { project: Project }) {
           className={buttonVariants({ variant: "ghost", size: "sm" })}
         >
           Read Case Study
-          <ArrowRight className="size-4" />
+          <ArrowRight data-icon="inline-end" className="size-4" />
         </Link>
       </CardFooter>
     </Card>

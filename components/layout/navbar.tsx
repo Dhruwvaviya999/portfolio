@@ -38,7 +38,7 @@ export function Navbar() {
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
         <Link
           href="/"
-          className="flex items-center gap-2 font-semibold tracking-tight"
+          className="flex items-center gap-2 font-heading font-semibold tracking-tight"
         >
           <span
             className="inline-block size-2 rounded-full bg-brand"

@@ -130,7 +130,7 @@ export function Terminal({
             "cursor-text overflow-y-auto overscroll-contain p-4 sm:p-5",
             "[scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]",
             "transition-[height] duration-200 ease-out motion-reduce:transition-none",
-            maximized ? MAXIMIZED_SCREEN : (screenClassName ?? "h-[22rem] sm:h-[26rem]"),
+            maximized ? MAXIMIZED_SCREEN : (screenClassName ?? "h-[26rem] sm:h-[31rem]"),
           )}
         >
           <TerminalOutput lines={term.lines} />

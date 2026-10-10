@@ -1,16 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Loader2, Send } from "lucide-react";
+import { CheckCircle2, Loader2, Mail, MessageSquare, Send, User } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/site";
 import { Button } from "@/components/ui/button";
+import { Input, Textarea } from "@/components/ui/input";
 
-const fieldClass = cn(
-  "flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-colors",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40",
-);
+const labelClass = "text-sm font-medium";
 
 /** Web3Forms access key — sends submissions to the inbox registered with the key. */
 const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
@@ -86,47 +83,47 @@ export function ContactForm() {
       onSubmit={handleSubmit}
       className="space-y-5 rounded-xl border border-border bg-card p-6"
     >
-      <div className="space-y-1.5">
-        <label htmlFor="contact-name" className="text-sm font-medium">
+      <div className="space-y-2">
+        <label htmlFor="contact-name" className={labelClass}>
           Name
         </label>
-        <input
+        <Input
           id="contact-name"
           name="name"
           type="text"
           required
           autoComplete="name"
           placeholder="Your name"
-          className={fieldClass}
+          icon={<User />}
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label htmlFor="contact-email" className="text-sm font-medium">
+      <div className="space-y-2">
+        <label htmlFor="contact-email" className={labelClass}>
           Email
         </label>
-        <input
+        <Input
           id="contact-email"
           name="email"
           type="email"
           required
           autoComplete="email"
           placeholder="you@example.com"
-          className={fieldClass}
+          icon={<Mail />}
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label htmlFor="contact-message" className="text-sm font-medium">
+      <div className="space-y-2">
+        <label htmlFor="contact-message" className={labelClass}>
           Message
         </label>
-        <textarea
+        <Textarea
           id="contact-message"
           name="message"
           required
           rows={5}
           placeholder="Tell me about your project…"
-          className={cn(fieldClass, "min-h-28 resize-y")}
+          icon={<MessageSquare />}
         />
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -37,21 +37,49 @@ function isTypingTarget(el: Element | null): boolean {
  */
 type View = "closed" | "open" | "minimized";
 
+/** Matches the window's `duration-200` fold (see `TerminalWindow`). */
+const FOLD_MS = 200;
+
 /**
  * Global terminal overlay. Opens on the backtick key (or Ctrl+`) from anywhere
  * that isn't a text field, or via `openTerminal()`. Mounted once in the root
  * layout by `TerminalLauncher`; shares command history with the section
  * terminal through sessionStorage. The traffic lights close, minimize
  * (collapse to the title bar) and maximize it; the title bar drags it around.
+ * Every way of closing folds the body up first, like minimize, then lets the
+ * dialog fade the title bar out.
  */
 export function TerminalDialog({ data }: { data: TerminalData }) {
   const [view, setView] = useState<View>("closed");
   const [maximized, setMaximized] = useState(false);
+  /** Folding up before the dialog actually closes. */
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef<number | undefined>(undefined);
   const open = view !== "closed";
   const minimized = view === "minimized";
   const drag = useDragOffset();
 
-  const close = useCallback(() => setView("closed"), []);
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+
+  const close = useCallback(() => {
+    if (view === "closed" || closing) return;
+    setClosing(true);
+    // Already folded when minimized: straight to the fade.
+    closeTimer.current = window.setTimeout(
+      () => {
+        setClosing(false);
+        setView("closed");
+      },
+      view === "minimized" ? 0 : FOLD_MS,
+    );
+  }, [view, closing]);
+
+  /** Open, restore from minimized, or cancel a close that's folding. */
+  const show = useCallback(() => {
+    window.clearTimeout(closeTimer.current);
+    setClosing(false);
+    setView("open");
+  }, []);
   const toggleMinimized = useCallback(
     () => setView((v) => (v === "minimized" ? "open" : "minimized")),
     [],
@@ -62,30 +90,30 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
   }, []);
 
   useEffect(() => {
-    const onOpen = () => setView("open");
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "`" || e.metaKey || e.altKey) return;
       if (isTypingTarget(document.activeElement) && !e.ctrlKey) return;
       e.preventDefault();
-      // Closed or minimized -> bring it up; open -> close.
-      setView((v) => (v === "open" ? "closed" : "open"));
+      // Open -> close; closed, minimized or mid-close -> bring it up.
+      if (view === "open" && !closing) close();
+      else show();
     };
-    window.addEventListener(TERMINAL_OPEN_EVENT, onOpen);
+    window.addEventListener(TERMINAL_OPEN_EVENT, show);
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener(TERMINAL_OPEN_EVENT, onOpen);
+      window.removeEventListener(TERMINAL_OPEN_EVENT, show);
       window.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [view, closing, close, show]);
 
   return (
     <Dialog
       open={open}
       onOpenChange={(next, details) => {
-        if (next) return setView("open");
+        if (next) return show();
         // While minimized, Escape belongs to the page, not the terminal.
         if (minimized && details.reason === "escape-key") return;
-        setView("closed");
+        close();
       }}
       // Minimized: no focus trap or scroll lock, and outside clicks don't
       // dismiss it. The backdrop fades out and lets clicks through.
@@ -138,7 +166,7 @@ export function TerminalDialog({ data }: { data: TerminalData }) {
             data={data}
             autoFocus
             onClose={close}
-            collapsed={minimized}
+            collapsed={minimized || closing}
             maximized={maximized}
             titleBarProps={maximized ? undefined : drag.handleProps}
             controls={{
