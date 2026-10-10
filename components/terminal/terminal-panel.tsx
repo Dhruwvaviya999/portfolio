@@ -8,10 +8,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { SquareTerminal } from "lucide-react";
-
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import type { TerminalData } from "@/lib/terminal/types";
 import { Terminal } from "./terminal";
 
@@ -19,8 +16,12 @@ import { Terminal } from "./terminal";
 const RESIZE_MS = 200;
 /** Gap between a maximized window and the viewport edge (same as the overlay's `top-3`). */
 const EDGE = 12;
+/** Height of the area holding the Dock icon while closed. */
+const DOCK_H = 160;
 
 type View = "closed" | "open" | "minimized";
+
+const SLOT_TRANSITION = "transition-[height] duration-200 ease-out motion-reduce:transition-none";
 
 /**
  * The section's terminal, with the same traffic lights as the overlay: close
@@ -28,9 +29,12 @@ type View = "closed" | "open" | "minimized";
  * maximize. Maximizing lifts the window out of the flow with `position: fixed`
  * and animates top/left/width from its spot on the page to the viewport edges;
  * the empty slot keeps its height so the page doesn't jump. Escape or a click
- * on the backdrop brings it back. Closing folds the body up like minimize,
- * fades the title bar out, then leaves a placeholder of the same height with a
- * reopen button.
+ * on the backdrop brings it back.
+ *
+ * Closing folds the body up like minimize, fades the title bar out, then
+ * shrinks the space down to a Dock-style app icon. Clicking the icon plays it
+ * backwards with a fresh session: the title bar pops out of the icon, then the
+ * body unfolds.
  */
 export function TerminalPanel({
   data,
@@ -46,8 +50,11 @@ export function TerminalPanel({
   /** Fixed-position box while maximized or animating back; null = in the flow. */
   const [frame, setFrame] = useState<CSSProperties | null>(null);
   const [slotHeight, setSlotHeight] = useState<number | null>(null);
-  /** Height the window had when closed; the placeholder keeps it. */
+  /** Height the window had when closed; held while it folds and fades. */
   const [closedHeight, setClosedHeight] = useState<number | null>(null);
+  /** Reopen in two steps: title bar appears, then the body unfolds. */
+  const [opening, setOpening] = useState<"appear" | "unfold" | null>(null);
+  const openTimer = useRef<number | undefined>(undefined);
   /** Bumped on reopen so the terminal remounts with a fresh session. */
   const [session, setSession] = useState(0);
   const slotRef = useRef<HTMLDivElement>(null);
@@ -57,7 +64,13 @@ export function TerminalPanel({
   // Like the overlay: backdrop and scroll lock only while maximized and expanded.
   const modal = maximized && !minimized && !closing;
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(timer.current);
+      window.clearTimeout(openTimer.current);
+    },
+    [],
+  );
 
   /** Drop back into the flow immediately (close, `goto`). */
   const settle = useCallback(() => {
@@ -106,6 +119,8 @@ export function TerminalPanel({
   const close = useCallback(() => {
     if (closing) return;
     window.clearTimeout(timer.current);
+    window.clearTimeout(openTimer.current);
+    setOpening(null);
     setClosedHeight(slotRef.current?.getBoundingClientRect().height ?? null);
     setClosing("fold");
     timer.current = window.setTimeout(
@@ -125,6 +140,11 @@ export function TerminalPanel({
   const reopen = () => {
     setSession((s) => s + 1);
     setView("open");
+    setOpening("appear");
+    openTimer.current = window.setTimeout(() => {
+      setOpening("unfold");
+      openTimer.current = window.setTimeout(() => setOpening(null), RESIZE_MS);
+    }, RESIZE_MS);
   };
 
   const toggleMinimized = useCallback(
@@ -155,29 +175,29 @@ export function TerminalPanel({
     return () => window.removeEventListener("keydown", onKey);
   }, [modal, restore]);
 
+  // The slot's height is pinned (and animated) whenever the window isn't
+  // simply sitting in the flow: maximized, closing, closed, reopening.
+  const slotStyle: CSSProperties = {
+    height:
+      slotHeight ?? (closing ? closedHeight : view === "closed" ? DOCK_H : null) ?? undefined,
+    // Reopening: hold the Dock's space until the unfolding window outgrows it.
+    minHeight: opening ? DOCK_H : undefined,
+  };
+
   if (view === "closed") {
     return (
       <div
-        className={cn("min-h-48", className)}
-        style={closedHeight == null ? undefined : { height: closedHeight }}
+        ref={slotRef}
+        className={cn("flex items-center justify-center", SLOT_TRANSITION, className)}
+        style={slotStyle}
       >
-        <div className="flex h-full animate-in flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card/40 duration-200 fade-in-0">
-          <p className="font-mono text-xs text-muted-foreground">[Process completed]</p>
-          <Button variant="outline" size="sm" onClick={reopen}>
-            <SquareTerminal />
-            Reopen terminal
-          </Button>
-        </div>
+        <DockIcon onOpen={reopen} />
       </div>
     );
   }
 
   return (
-    <div
-      ref={slotRef}
-      className={className}
-      style={{ height: slotHeight ?? (closing ? closedHeight : null) ?? undefined }}
-    >
+    <div ref={slotRef} className={cn(SLOT_TRANSITION, className)} style={slotStyle}>
       {frame ? (
         <div
           aria-hidden="true"
@@ -196,7 +216,8 @@ export function TerminalPanel({
         className={cn(
           "transition-[top,left,width,opacity,scale] duration-200 ease-out motion-reduce:transition-none",
           frame && "fixed z-50",
-          session > 0 && "animate-in fade-in-0 zoom-in-95",
+          // Reopened: grow out of the Dock icon, centered DOCK_H / 2 down.
+          session > 0 && "origin-[50%_5rem] animate-in fade-in-0 zoom-in-75",
           closing === "fade" && "scale-95 opacity-0",
         )}
       >
@@ -206,7 +227,7 @@ export function TerminalPanel({
           autoFocus={session > 0}
           onClose={close}
           onScrollTo={settle}
-          collapsed={minimized || closing !== null}
+          collapsed={minimized || closing !== null || opening === "appear"}
           maximized={maximized}
           controls={{
             onClose: close,
@@ -217,5 +238,35 @@ export function TerminalPanel({
         />
       </div>
     </div>
+  );
+}
+
+/** Mac Dock-style app icon: a tiny copy of the window, lifting on hover. */
+function DockIcon({ onOpen }: { onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label="Open terminal"
+      title="Open terminal"
+      className="group flex animate-in cursor-pointer flex-col items-center gap-2 outline-none duration-200 fade-in-0 zoom-in-75"
+    >
+      <span
+        aria-hidden="true"
+        className="flex size-16 flex-col overflow-hidden rounded-2xl bg-card shadow-lg shadow-black/10 ring-1 ring-foreground/10 transition-[translate,scale] duration-200 ease-out group-hover:-translate-y-1.5 group-hover:scale-110 group-focus-visible:ring-3 group-focus-visible:ring-ring/50 group-active:scale-95 dark:shadow-black/40"
+      >
+        <span className="flex h-3.5 shrink-0 items-center gap-[3px] bg-muted/60 px-2">
+          <span className="size-1.5 rounded-full bg-term-red/80" />
+          <span className="size-1.5 rounded-full bg-term-yellow/80" />
+          <span className="size-1.5 rounded-full bg-term-green/80" />
+        </span>
+        <span className="flex-1 bg-term-bg px-2 pt-1.5 text-left font-mono text-xs leading-none font-bold text-term-prompt">
+          &gt;_
+        </span>
+      </span>
+      <span className="font-mono text-xs text-muted-foreground transition-colors group-hover:text-foreground">
+        Terminal
+      </span>
+    </button>
   );
 }
